@@ -1,0 +1,17 @@
+.widget-funnel {
+
+  .perc-toggle {
+    display: inline-block;
+    float: right;
+  }
+
+  .empty {
+    height: 300px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-content: stretch;
+    align-items: center;
+  }
+}

@@ -48,6 +48,9 @@
       },
       storeMessages: {
         value: false
+      },
+      enableMissionControl: {
+        value: false
       }
     },
     oneditprepare: function() {
@@ -155,10 +158,17 @@
       </span>
     </div>
     <div class="form-row">
-      <label for="node-config-input-storeMessages">Store message</label>
+      <label for="node-config-input-enableMissionControl">Use Mission Control</label>
+      <input type="checkbox" value="true" id="node-config-input-enableMissionControl">
+      <span class="redbot-form-hint">
+        Enable Mission Control
+      </span>
+    </div>
+    <div class="form-row">
+      <label for="node-config-input-storeMessages">Store messages</label>
       <input type="checkbox" value="true" id="node-config-input-storeMessages">
       <span class="redbot-form-hint">
-        Store message in Mission Control
+        Store inbound and outbound messages in Mission Control
       </span>
     </div>
   </div>

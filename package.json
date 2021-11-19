@@ -13,7 +13,15 @@
     "commit-wiki": "git add . && git commit -m \"docs\"",
     "build-docs": "git clone https://github.com/guidone/node-red-contrib-chatbot.wiki.git ./wiki && node ./bin/generate-docs && rm -rf ./wiki",
     "clean": "rm -rf ./wiki",
-    "version": "git clone https://github.com/guidone/node-red-contrib-chatbot.wiki.git ./wiki && node ./bin/generate-docs && rm -rf ./wiki && git add *.html && git add *.md"
+    "version": "git clone https://github.com/guidone/node-red-contrib-chatbot.wiki.git ./wiki && node ./bin/generate-docs && rm -rf ./wiki && git add *.html && git add *.md",
+    "start-mc": "run-s pre-start dev-server",
+    "dev-server": "webpack-dev-server --open --config webpack/webpack.dev.js",
+    "pre-start": "node bin/import.js",
+    "plugin": "node bin/build.js",
+    "build": "cross-env NODE_OPTIONS=--max_old_space_size=8192 webpack --config webpack/webpack.prod.js -p",
+    "build-plugin": "webpack --config webpack/webpack.plugin.js --display-modules",
+    "start-mc-dev": "DEV=dev node-red",
+    "start-mc-plugin": "DEV=plugin node-red"
   },
   "repository": {
     "type": "git",

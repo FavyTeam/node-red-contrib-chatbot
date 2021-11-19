@@ -33,7 +33,8 @@ module.exports = function(RED) {
         debug: config.debug,
         webHook: config.webHook,
         connectMode: config.connectMode,
-        storeMessages: config.storeMessages
+        storeMessages: config.storeMessages,
+        enableMissionControl: config.enableMissionControl
       })
     ),
     {
