@@ -1,0 +1,36 @@
+<script type="text/javascript">
+  RED.nodes.registerType('mc-store', {
+    category: 'Mission Control',
+    color: '#6699CC',
+    defaults: {},
+    inputs: 1,
+    outputs: 1,
+    paletteLabel: 'MC Store',
+    icon: 'chatbot-command.png',
+    label: function() {        
+      return 'MC Store';
+    },
+    oneditprepare: function() {
+      var widget = $('#node-input-payload');
+      widget.typedInput({
+        'default': 'json',
+        types: ['json']
+      });
+      widget.typedInput('value', this.payload);
+    },
+    oneditsave: function() {
+      this.payload = $('#node-input-payload').typedInput('value');
+    }
+  });
+</script>
+
+<script type="text/x-red" data-template-name="mc-store">
+  
+</script>
+
+<script type="text/x-red" data-help-name="mc-store">
+  Store the message - inbound or outbound - in Mission Control logs.
+</script>
+  
+  
+  

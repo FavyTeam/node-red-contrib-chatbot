@@ -1,0 +1,41 @@
+<script type="text/javascript">
+  RED.nodes.registerType('mc-event', {
+    category: 'Mission Control',
+    color: '#6699CC',
+    defaults: {
+      flow: {
+        value: '',
+        required: true
+      },
+      name: {
+        value: '',
+        required: true
+      }
+    },
+    inputs: 1,
+    outputs: 1,
+    paletteLabel: 'MC Event',
+    icon: 'chatbot-command.png',
+    label: function() {        
+      return 'MC Event' + (this.name != null ? ' (' + this.name + ')' : '');
+    }
+  });
+</script>
+
+<script type="text/x-red" data-template-name="mc-event">
+  <div class="form-row">
+    <label for="node-input-topic"><i class="icon-tag"></i> Flow</label>
+    <input type="text" id="node-input-flow" placeholder="Flow name">
+  </div>
+  <div class="form-row">
+    <label for="node-input-name"></i> Event name</label>
+    <input type="text" id="node-input-name">
+  </div>
+  
+</script>
+
+<script type="text/x-red" data-help-name="mc-event">
+</script>
+  
+  
+  

@@ -1,7 +1,7 @@
 const FacebookServer = require('../lib/platforms/facebook/facebook');
 const RegisterType = require('../lib/node-installer');
 
-const { GenericOutNode, GenericInNode, GenericBotNode } = require('../lib/sender-factory');
+const { GenericOutNode, GenericInNode, GenericBotNode } = require('../lib/sender-factory/index');
 
 module.exports = function(RED) {
   const registerType = RegisterType(RED);
