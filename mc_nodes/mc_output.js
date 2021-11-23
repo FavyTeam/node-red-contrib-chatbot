@@ -2,8 +2,8 @@ const _ = require('lodash');
 
 module.exports = function(RED) {
 
-  const { Events, sendMessage } = require('../mc')(RED);
-  
+  const { sendMessage } = require('../mc')(RED);
+
   function MissionControlOutput(config) {
     RED.nodes.createNode(this, config);
     const node = this;
@@ -41,10 +41,7 @@ module.exports = function(RED) {
       send(msg);
       done();
     });
-
-
   }
-
 
   RED.nodes.registerType('mc-output', MissionControlOutput);
 };

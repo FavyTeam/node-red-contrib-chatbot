@@ -51,6 +51,9 @@
       },
       enableMissionControl: {
         value: false
+      },
+      inspectMessages: {
+        value: false
       }
     },
     oneditprepare: function() {
@@ -109,6 +112,9 @@
     <input type="text" id="node-config-input-botname">
   </div>
   <div class="form-editable">
+    <div class="redbot-separator">
+      <div>Telegram settings</div>
+    </div>
     <div class="form-row">
       <label for="node-config-input-token">Token</label>
       <input type="text" id="node-config-input-token">
@@ -138,16 +144,19 @@
         like  <code>https://123456.ngrok.io/redbot/telegram</code>
       </div>
     </div>
+    <div class="redbot-separator">
+      <div>RedBot settings</div>
+    </div>
     <div class="form-row">
       <label for="node-config-input-enableMissionControl" class="redbot-label">Use Mission Control</label>
       <input type="checkbox" value="true" class="redbot-checkbox" id="node-config-input-enableMissionControl">
       <span class="redbot-form-hint">
-        Enable Mission Control
+        Enable Mission Control, see <a href="https://github.com/guidone/node-red-contrib-chatbot/wiki/Mission-Control" target="_blank">documentation here</a>
       </span>
     </div>
     <div class="form-row form-row-mission-control">
       <div class="redbot-form-hint">
-        Mission Control uses...
+        Mission Control uses the built-in <b>SQLite context provider</b>.
       </div>
     </div>
     </div>
@@ -159,13 +168,6 @@
         To extend <strong>RedBot</strong> with a new chat context provider see <a href="https://github.com/guidone/node-red-contrib-chatbot/wiki/Creating-a-Chat-Context-Provider" target="_blank">this tutorial</a>.
       </div>
     </div>
-    <div class="form-row">
-      <label for="node-config-input-debug">Debug</label>
-      <input type="checkbox" value="true" id="node-config-input-debug">
-      <span class="redbot-form-hint">
-        Show debug information on send/receive
-      </span>
-    </div>
     <div class="form-row form-row-mission-control">
       <label class="redbot-label" for="node-config-input-storeMessages">Store messages</label>
       <input type="checkbox" value="true" class="redbot-checkbox" id="node-config-input-storeMessages">
@@ -173,8 +175,28 @@
         Store inbound and outbound messages in Mission Control
       </span>
     </div>
+    <div class="form-row">
+      <label for="node-config-input-debug">Debug</label>
+      <input type="checkbox" value="true" class="redbot-checkbox" id="node-config-input-debug">
+      <span class="redbot-form-hint">
+        Show debug information on send/receive
+      </span>
+    </div>
+    <div class="form-row form-row-mission-control">
+      <label for="node-config-input-inspectMessages" class="redbot-label">Inspect messages</label>
+      <input type="checkbox" value="true" class="redbot-checkbox" id="node-config-input-inspectMessages">
+      <span class="redbot-form-hint">
+        Inspect messages in real time in Mission Control
+      </span>
+    </div>
     <div class="redbot-separator">
-      Legacy settings
+      <div>
+        Legacy settings
+      </div>
+      <span class="redbot-form-hint">
+        These settings are for retrocompatibility, should only be used in legacy bots. Use <b>Mission Control</b>
+        to control user access or to log messages
+      </span>
     </div>
     <div class="form-row">
       <label for="node-config-input-usernames">Users</label>

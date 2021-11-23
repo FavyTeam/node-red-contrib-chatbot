@@ -34,7 +34,8 @@ module.exports = function(RED) {
         webHook: config.webHook,
         connectMode: config.connectMode,
         storeMessages: config.storeMessages,
-        enableMissionControl: config.enableMissionControl
+        enableMissionControl: config.enableMissionControl,
+        inspectMessages: config.inspectMessages
       })
     ),
     {
