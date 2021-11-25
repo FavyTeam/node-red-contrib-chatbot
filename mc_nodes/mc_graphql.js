@@ -6,9 +6,7 @@ const lcd = require('../lib/lcd/index');
 const MessageTemplate = require('../lib/message-template-async');
 const {
   isValidMessage,
-  isSimulator,
-  extractValue,
-  when
+  extractValue
 } = require('../lib/helpers/utils');
 
 const isEmptyResponse = response => {
@@ -47,18 +45,20 @@ module.exports = function(RED) {
       } else if (msg.payload != null && _.isObject(msg.payload.variables)) {
         variables = msg.payload.variables;
       }
-      // TODO only if valid message
+      // translate query
       let translatedQuery = node.query;
       if (isValidMessage(msg, null, { silent: true })) {
         const template = MessageTemplate(msg, node);
         translatedQuery = await template(node.query);
       }
       if (debug) {
+        // eslint-disable-next-line no-console
         console.log(
           lcd.green('GraphQL')
           + ' (id: ' + lcd.grey(this.id)
           + (!_.isEmpty(name) ? `, name: ${lcd.grey(name)}` : '')
           + ')');
+        // eslint-disable-next-line no-console
         console.log(lcd.prettify(translatedQuery, { indent: 2 }))
       }
 
