@@ -152,7 +152,7 @@ async function bootstrap(server, app, log, redSettings) {
 
   // todo put db schema here
   const databaseSchema = DatabaseSchema(mcSettings)
-  const { Configuration, graphQLServer, graphQLSchema, Category, Content, Admin, ChatBot, Plugin, sequelize } = databaseSchema;
+  const { Configuration, graphQLServer, graphQLSchema, Category, Content, Admin,  ChatBot, Plugin, sequelize } = databaseSchema;
 
   // if database doesn't exist, then create it and run sync to create blank tables
   if (!fs.existsSync(mcSettings.dbPath)) {
@@ -175,7 +175,7 @@ Some **formatting** is _allowed_!`
   //passport authentication
   passport.use(new BasicStrategy(async function (username, password, done) {
     try {
-      user = await Admin.findOne({ where: { username } });
+      let user = await Admin.findOne({ where: { username } });
       if (user == null) {
         done(null, false);
       } else {

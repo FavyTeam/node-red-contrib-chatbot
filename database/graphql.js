@@ -1,7 +1,7 @@
-const { ApolloServer, graphqlExpress } = require('apollo-server-express');
+const { ApolloServer } = require('apollo-server-express');
 const { resolver } = require('graphql-sequelize');
 const { Kind } = require('graphql/language');
-const { PubSub, withFilter } = require('graphql-subscriptions');
+const { PubSub } = require('graphql-subscriptions');
 const _ = require('lodash');
 const geolib = require('geolib');
 const Sequelize = require('sequelize');
@@ -14,7 +14,7 @@ const Op = Sequelize.Op;
 const pubsub = new PubSub();
 
 const { when, hash } = require('../lib/utils');
-const isCircularPaths = require('../lib/get-circular-paths');
+//const isCircularPaths = require('../lib/get-circular-paths');
 
 const deleteFile = filename => new Promise((resolve, reject) => {
   fs.unlink(filename, err => {
@@ -86,7 +86,7 @@ const JSONType = new GraphQLScalarType({
     }
     return result;
   },
-  parseLiteral(ast) {
+  parseLiteral() {
     return null;
   },
 });
@@ -94,7 +94,7 @@ const JSONType = new GraphQLScalarType({
 const PayloadType = new GraphQLScalarType({
   name: 'Payload',
   description: 'Payload (join custom fields in an hash)',
-  parseValue(value) {
+  parseValue() {
     // return JSON.stringify(value);
   },
   serialize(fields) {
@@ -108,7 +108,7 @@ const PayloadType = new GraphQLScalarType({
     });
     return result;
   },
-  parseLiteral(ast) {
+  parseLiteral() {
     return null;
   },
 });
@@ -168,6 +168,10 @@ module.exports = ({
       context: {
         type: JSONType,
         description: 'The context to update',
+      },
+      chatbotId: {
+        type: GraphQLString,
+        description: '',
       }
     }
   });
@@ -195,7 +199,7 @@ module.exports = ({
       user: {
         type: userType,
         description: 'User related to this chatId',
-        resolve: (chatId, args) => User.findOne({ where: { userId: chatId.userId }})
+        resolve: (chatId) => User.findOne({ where: { userId: chatId.userId }})
       }
     })
   });
@@ -240,62 +244,6 @@ module.exports = ({
         description: ''
       },
       version: {
-        type: GraphQLString,
-        description: ''
-      },
-      status: {
-        type: GraphQLString,
-        description: ''
-      },
-      payload: {
-        type: JSONType,
-        description: ''
-      },
-      jsonSchema: {
-        type: JSONType,
-        description: ''
-      },
-      snapshot: {
-        type: JSONType,
-        description: ''
-      },
-      lat: {
-        type: GraphQLFloat,
-        description: ''
-      },
-      lon: {
-        type: GraphQLFloat,
-        description: ''
-      },
-      createdAt: {
-        type: DateType
-      },
-      updatedAt: {
-        type: DateType
-      },
-      lastUpdate: {
-        type: DateType
-      }
-    })
-  });
-
-  const newDeviceType = new GraphQLInputObjectType({
-    name: 'NewDevice',
-    description: 'tbd',
-    fields: () => ({
-      status: {
-        type: GraphQLString,
-        description: ''
-      },
-      name: {
-        type: GraphQLString,
-        description: ''
-      },
-      version: {
-        type: GraphQLString,
-        description: ''
-      },
-      status: {
         type: GraphQLString,
         description: ''
       },
@@ -378,6 +326,10 @@ module.exports = ({
       },
       geohash: {
         type: GraphQLString
+      },
+      chatbotId: {
+        type: GraphQLString,
+        description: '',
       }
     })
   });
@@ -421,6 +373,10 @@ module.exports = ({
       },
       geohash: {
         type: GraphQLString
+      },
+      chatbotId: {
+        type: GraphQLString,
+        description: '',
       }
     })
   });
@@ -525,6 +481,10 @@ module.exports = ({
           });
         }
       },
+      chatbotId: {
+        type: GraphQLString,
+        description: '',
+      }
     })
   });
 
@@ -570,6 +530,10 @@ module.exports = ({
       payload: {
         type: JSONType,
         description: '',
+      },
+      chatbotId: {
+        type: GraphQLString,
+        description: '',
       }
     })
   });
@@ -611,6 +575,10 @@ module.exports = ({
       },
       payload: {
         type: JSONType,
+        description: '',
+      },
+      chatbotId: {
+        type: GraphQLString,
         description: '',
       }
     })
@@ -663,6 +631,10 @@ module.exports = ({
       ts: {
         type: GraphQLString,
         description: '',
+      },
+      chatbotId: {
+        type: GraphQLString,
+        description: '',
       }
     })
   });
@@ -685,6 +657,10 @@ module.exports = ({
       },
       createdAt: {
         type: DateType
+      },
+      chatbotId: {
+        type: GraphQLString,
+        description: '',
       }
     }
   });
@@ -702,6 +678,10 @@ module.exports = ({
         description: '',
       },
       namespace: {
+        type: GraphQLString,
+        description: '',
+      },
+      chatbotId: {
         type: GraphQLString,
         description: '',
       }
@@ -731,7 +711,7 @@ module.exports = ({
     }
   });
 
-  const newPluginType = new GraphQLInputObjectType({
+  /*const newPluginType = new GraphQLInputObjectType({
     name: 'NewPlugin',
     description: 'tbd',
     fields: {
@@ -748,7 +728,7 @@ module.exports = ({
         description: '',
       }
     }
-  });
+  });*/
 
   const chatbotType = new GraphQLObjectType({
     name: 'Chatbot',
@@ -774,6 +754,10 @@ module.exports = ({
         type: new GraphQLList(pluginType),
         description: 'The list of installed plugins',
         resolve: (root) => root.getPlugins({ limit: 9999 })
+      },
+      chatbotId: {
+        type: GraphQLString,
+        description: '',
       }
     }
   });
@@ -791,6 +775,10 @@ module.exports = ({
         description: '',
       },
       guid: {
+        type: GraphQLString,
+        description: '',
+      },
+      chatbotId: {
         type: GraphQLString,
         description: '',
       }
@@ -850,14 +838,18 @@ module.exports = ({
       },
       user: {
         type: userType,
-        resolve: (message, args) => {
+        resolve: (message) => {
           return User.findOne({ where: { userId: message.userId }});
         }
+      },
+      chatbotId: {
+        type: GraphQLString,
+        description: '',
       }
     }
   });
 
-
+  // TODO remove this
   const eventType = new GraphQLObjectType({
     name: 'Event',
     description: 'tbd',
@@ -889,26 +881,6 @@ module.exports = ({
     }
   });
 
-  const newEventType = new GraphQLInputObjectType({
-    name: 'NewEvent',
-    description: 'tbd',
-    fields: {
-      flow: {
-        type: GraphQLString,
-        description: '',
-      },
-      name: {
-        type: GraphQLString,
-        description: '',
-      },
-      sources: {
-        type: GraphQLList(GraphQLString),
-        description: 'List of current events'
-      }
-    }
-  });
-
-
 
   const configurationType = new GraphQLObjectType({
     name: 'Configuration',
@@ -923,6 +895,10 @@ module.exports = ({
         description: '',
       },
       payload: {
+        type: GraphQLString,
+        description: '',
+      },
+      chatbotId: {
         type: GraphQLString,
         description: '',
       }
@@ -1020,6 +996,10 @@ module.exports = ({
       },
       geohash: {
         type: GraphQLString
+      },
+      chatbotId: {
+        type: GraphQLString,
+        description: '',
       }
     }
   });
@@ -1088,6 +1068,10 @@ module.exports = ({
       },
       geohash: {
         type: GraphQLString
+      },
+      chatbotId: {
+        type: GraphQLString,
+        description: '',
       }
     }
   });
@@ -1101,6 +1085,10 @@ module.exports = ({
         description: '',
       },
       payload: {
+        type: GraphQLString,
+        description: '',
+      },
+      chatbotId: {
         type: GraphQLString,
         description: '',
       }
@@ -1199,7 +1187,7 @@ module.exports = ({
         description: 'Total devices',
         args: {
         },
-        resolve: (root, { }) => Device.count()
+        resolve: () => Device.count()
       }
     }
   });
@@ -1273,9 +1261,11 @@ module.exports = ({
     namespace,
     search,
     slugs,
+    chatbotId
+    /*,
     latitude,
     longitude,
-    precision = 100
+    precision = 100*/
   }) => {
     const whereParams = compactObject({
       id: _.isArray(ids) && !_.isEmpty(ids) ? { [Op.in]: ids } : id,
@@ -1293,7 +1283,10 @@ module.exports = ({
         { slug: { [Op.like]: `%${search}%` } },
       ]
     }
-    if (longitude != null && latitude != null && precision > 9) {
+    if (!_.isEmpty(chatbotId)) {
+      whereParams.chatbotId = chatbotId;
+    }
+    /*if (longitude != null && latitude != null && precision > 9) {
       const [sw, ne] = geolib.getBoundsOfDistance({ latitude, longitude }, precision);
       where[Op.and] = [
         { 'latitude': { [Op.gte]: sw.latitude }},
@@ -1301,7 +1294,7 @@ module.exports = ({
         { 'longitude': { [Op.gte]: sw.longitude }},
         { 'longitude': { [Op.lte]: ne.longitude }},
       ]
-    }
+    }*/
     return whereParams;
   }
 
@@ -1343,21 +1336,21 @@ module.exports = ({
       messages: {
         type: messageCounterType,
         description: 'Counters for messages',
-        resolve: (root, args) => {
+        resolve: () => {
           return {};
         }
       },
       users: {
         type: userCounterType,
         description: 'Counters for users',
-        resolve: (root, args) => {
+        resolve: () => {
           return {};
         }
       },
       admins: {
         type: adminCounterType,
         description: 'Counters for users',
-        resolve: (root, args) => {
+        resolve: () => {
           return {};
         }
       },
@@ -1418,7 +1411,7 @@ module.exports = ({
           }
         },
 
-        createEvent: {
+        /*createEvent: {
           type: eventType,
           args: {
             event: { type: new GraphQLNonNull(newEventType) }
@@ -1455,7 +1448,7 @@ module.exports = ({
               }
             //}
           }
-        },
+        },*/
 
         createConfiguration: {
           type: configurationType,
@@ -1680,7 +1673,7 @@ module.exports = ({
           }
         },
 
-        editDevice: {
+        /*editDevice: {
           type: deviceType,
           args: {
             id: { type: GraphQLInt },
@@ -1694,9 +1687,9 @@ module.exports = ({
             pubsub.publish('deviceUpdated', { device: updated.toJSON() });
             return updated;
           }
-        },
+        },*/
 
-        deleteDevice: {
+        /*deleteDevice: {
           type: deviceType,
           args: {
             id: { type: GraphQLInt }
@@ -1716,7 +1709,7 @@ module.exports = ({
           async resolve(root, { device }) {
             return Device.create(device);
           }
-        },
+        },*/
 
         editUser: {
           type: userType,
@@ -1777,7 +1770,7 @@ module.exports = ({
               if (!hasTransport) {
                 await ChatId.update({ userId: toUser.userId }, { where: { id: item.id }});
               }
-            };
+            }
             // finally destroy source user
             await User.destroy({ where: { id: fromUser.id }});
             return toUser;
@@ -1826,7 +1819,6 @@ module.exports = ({
           resolve: async function(root, { plugin, url, version, initialConfiguration, initialContent }) {
 
             const response = await fetch(url);
-            console.log('RESPONSE', response.status);
             if (!response.ok) {
               throw `Error trying to download plugin at ${url}`;
             }
@@ -1945,7 +1937,12 @@ module.exports = ({
           resolve: async function(root, { message }) {
             const { user, ...newMessage } = message;
             // check if exists userid / transport and create or update
-            const existingChatId = await ChatId.findOne({ where: { chatId: message.chatId, transport: message.transport }});
+            const existingChatId = await ChatId.findOne({
+              where: {
+                chatId: message.chatId,
+                transport: message.transport
+              }
+            });
             let userId;
             let currentUser;
             // if no chatId, the create the user and the related chatId-transport using the userId of the message
@@ -1962,6 +1959,7 @@ module.exports = ({
               if (message.chatId != null) {
                 await ChatId.create({ userId: user.userId, chatId: message.chatId, transport: message.transport });
               } else {
+                // eslint-disable-next-line no-console
                 console.trace(`Warning: received message without chatId for transport ${message.transport}`)
               }
             } else {
@@ -1983,6 +1981,11 @@ module.exports = ({
         chatbot: {
           type: chatbotType,
           resolve: async() => ChatBot.findOne()
+        },
+
+        chatbots: {
+          type: new GraphQLList(chatbotType),
+          resolve: resolver(ChatBot)
         },
 
         contexts: {
@@ -2009,6 +2012,7 @@ module.exports = ({
         users: {
           type: new GraphQLList(userType),
           args: {
+            chatbotId: { type: GraphQLString },
             offset: { type: GraphQLInt },
             limit: { type: GraphQLInt },
             id: { type: GraphQLInt },
@@ -2017,10 +2021,11 @@ module.exports = ({
             username: { type: GraphQLString },
             search: { type: GraphQLString }
           },
-          resolve(root, { order, offset = 0, limit = 10, userId, username, id, search }) {
+          resolve(root, { order, offset = 0, limit = 10, userId, username, id, search, chatbotId }) {
             const whereParams = compactObject({
               id,
               userId,
+              chatbotId,
               username: username != null ? { [Op.like]: `%${username}%` } : null,
             });
             if (search != null) {
@@ -2090,6 +2095,7 @@ module.exports = ({
         contents: {
           type: new GraphQLList(contentType),
           args: {
+            chatbotId: { type: GraphQLString },
             slug: { type: GraphQLString },
             order: { type: GraphQLString },
             offset: { type: GraphQLInt },
@@ -2121,7 +2127,8 @@ module.exports = ({
             slugs,
             latitude,
             longitude,
-            precision = 9
+            precision = 9,
+            chatbotId
           }) {
             return Content.findAll({
               limit,
@@ -2139,7 +2146,8 @@ module.exports = ({
                 slugs,
                 latitude,
                 longitude,
-                precision
+                precision,
+                chatbotId
               })
             });
           }
@@ -2183,6 +2191,7 @@ module.exports = ({
         messages: {
           type: new GraphQLList(messageType),
           args: {
+            chatbotId: { type: GraphQLString },
             offset: { type: GraphQLInt },
             limit: { type: GraphQLInt },
             order: { type: GraphQLString },
@@ -2200,6 +2209,7 @@ module.exports = ({
         records: {
           type: new GraphQLList(recordType),
           args: {
+            chatbotId: { type: GraphQLString },
             order: { type: GraphQLString },
             type: { type: GraphQLString },
             status: { type: GraphQLString },
@@ -2226,9 +2236,10 @@ module.exports = ({
             longitude,
             where: rawWhere,
             precision = 100,
-            ids
+            ids,
+            chatbotId
           }) => {
-            const where = compactObject({ type, userId, status });
+            const where = compactObject({ type, userId, status, chatbotId });
             if (longitude != null && latitude != null && precision > 9) {
               const [sw, ne] = geolib.getBoundsOfDistance({ latitude, longitude }, precision);
               where[Op.and] = [
@@ -2250,9 +2261,7 @@ module.exports = ({
               }
             }
 
-
             const translatedQuery = translateWhere(maybeJSON(rawWhere));
-            console.log('--translatedQuery', translatedQuery)
             return Record.findAll({
               limit,
               offset,
@@ -2265,42 +2274,27 @@ module.exports = ({
         categories: {
           type: new GraphQLList(categoryType),
           args: {
+            chatbotId: { type: GraphQLString },
             order: { type: GraphQLString },
             namespace: { type: GraphQLString },
             offset: { type: GraphQLInt },
             limit: { type: GraphQLInt }
           },
-          resolve: (root, { order = 'name', offset, limit, namespace }) => {
+          resolve: (root, { order = 'name', offset, limit, namespace, chatbotId }) => {
             return Category.findAll({
               limit,
               offset,
               order: splitOrder(order),
               where: compactObject({
-                namespace
+                namespace, chatbotId
               })
-            });
-          }
-        },
-
-        devices: {
-          type: new GraphQLList(deviceType),
-          args: {
-            order: { type: GraphQLString },
-            offset: { type: GraphQLInt },
-            limit: { type: GraphQLInt }
-          },
-          resolve: (root, { order = 'name', offset, limit }) => {
-            return Device.findAll({
-              limit,
-              offset,
-              order: splitOrder(order)
             });
           }
         },
 
         counters: {
           type: countersType,
-          resolve: (root, args) => {
+          resolve: () => {
             return {};
           }
         },

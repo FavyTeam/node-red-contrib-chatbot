@@ -54,6 +54,9 @@
       },
       inspectMessages: {
         value: false
+      },
+      chatbotId: {
+        value: ''
       }
     },
     oneditprepare: function() {
@@ -167,6 +170,13 @@
         Select the chat context provider to use with this bot, if none is selected then non-persistent "memory" will be used.<br>
         To extend <strong>RedBot</strong> with a new chat context provider see <a href="https://github.com/guidone/node-red-contrib-chatbot/wiki/Creating-a-Chat-Context-Provider" target="_blank">this tutorial</a>.
       </div>
+    </div>
+    <div class="form-row form-row-mission-control">
+      <label for="node-config-input-chatbotId" class="redbot-label">Chatbot ID</label>
+      <input type="text" id="node-config-input-chatbotId" placeholder="Enter a chatbot ID">
+      <span class="redbot-form-hint">
+        Specify a chatbot ID if you're running multiple chatbots on this Node-RED instance (it's just a string of your choice). Leave it blank if you're just running a single chatbot.
+      </span>
     </div>
     <div class="form-row form-row-mission-control">
       <label class="redbot-label" for="node-config-input-storeMessages">Store messages</label>

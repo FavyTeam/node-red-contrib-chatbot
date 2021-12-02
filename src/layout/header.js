@@ -7,6 +7,7 @@ import { Link, useHistory } from 'react-router-dom';
 
 import AppContext from '../common/app-context';
 import useCurrentUser from '../hooks/current-user';
+import useLocalStorage from '../hooks/use-local-storage';
 
 const initials = user => {
   if (user.firstName != null && user.firstName.length !== 0 && user.lastName != null && user.lastName.length !== 0) {
@@ -34,9 +35,53 @@ const sortBy = (a, b) => {
   return 0;
 };
 
+
+const renderButton = (props, ref) => {
+  console.log('prop button', props)
+  return (
+    <div style={{
+
+      paddingRight: '20px'
+
+    }}>
+      <button ref={ref} style={{
+        fontSize: '14px',
+        backgroundColor: '#ffffff',
+        height: '56px',
+        color: '#000000',
+        paddingRight: '20px'
+
+      }}>
+        {props}
+      </button>
+    </div>
+  );
+};
+
+const ChatbotsSelector = ({ chatbots, value, onChange }) => {
+  const chatbot = chatbots.find(({ chatbotId }) => chatbotId === value);
+  console.log('re-render selected', value, '---', chatbot)
+  return (
+    <Dropdown
+      title={chatbot?.name ?? 'Not selected'}
+      onSelect={(chatbotId) => onChange(chatbotId)}
+      renderTitle={renderButton}
+      placement="bottomEnd"
+    >
+      {chatbots.map(({ chatbotId, name }) => (
+        <Dropdown.Item
+          eventKey={chatbotId}
+          key={chatbotId}
+        >{name}</Dropdown.Item>
+      ))}
+    </Dropdown>
+  )
+};
+
 const AppHeader = () => {
+  const [, setChatbotId] = useLocalStorage('chatbotId', undefined);
   const { user } = useCurrentUser();
-  const { state } = useContext(AppContext);
+  const { state, chatbots, dispatch } = useContext(AppContext);
   const history = useHistory();
   const { permissionQuery } = useCurrentUser();
   const { props } = useCodePlug('menu', permissionQuery);
@@ -93,6 +138,15 @@ const AppHeader = () => {
                 />
               </Whisper>
             )}
+            <ChatbotsSelector
+              chatbots={chatbots}
+              value={state.chatbotId}
+              onChange={(chatbotId => {
+                console.log('selected bot', chatbotId)
+                dispatch({ type: 'selectChatbot', chatbotId });
+                setChatbotId(chatbotId);
+              })}
+            />
             <Dropdown
               className="mc-avatar"
               placement="bottomEnd"

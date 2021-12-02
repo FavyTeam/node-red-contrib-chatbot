@@ -1,10 +1,11 @@
 import gql from 'graphql-tag';
 
 const SEARCH = gql`
-query($id: Int,$username: String, $search: String) {
-  users(id: $id,username: $username, search: $search) {
+query($id: Int,$username: String, $search: String, $chatbotId: String) {
+  users(id: $id,username: $username, search: $search, chatbotId: $chatbotId) {
     id,
     userId,
+    chatbotId,
     username,
     language,
     first_name,

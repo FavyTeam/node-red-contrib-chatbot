@@ -13,6 +13,7 @@ import CustomTable from '../../../../src/components/table';
 import LanguagePicker from '../../../../src/components/language-picker';
 import { Input } from '../../../../src/components/table-filters';
 import ExportButton from '../../../../src/components/export-button';
+import useMCContext from '../../../../src/hooks/mc-context';
 
 import useContents from '../hooks/content';
 import ModalContent from '../views/modal-content';
@@ -22,7 +23,17 @@ import hasField from '../helpers/has-field';
 import { ContentsType } from '../prop-types';
 
 const CONTENTS = gql`
-query($offset: Int, $limit: Int, $order: String, $categoryId: Int, $slug: String, $language: String, $namespace: String, $search: String) {
+query(
+  $offset: Int,
+  $limit: Int,
+  $order: String,
+  $categoryId: Int,
+  $slug: String,
+  $language: String,
+  $namespace: String,
+  $search: String,
+  $chatbotId: String
+) {
   counters {
     rows: contents {
      count(categoryId: $categoryId, slug: $slug, language: $language, namespace: $namespace, search: $search)
@@ -32,7 +43,17 @@ query($offset: Int, $limit: Int, $order: String, $categoryId: Int, $slug: String
     id,
     name
   }
-  rows: contents(offset: $offset, limit: $limit, order: $order, categoryId: $categoryId, slug: $slug, language: $language, namespace: $namespace, search: $search) {
+  rows: contents(
+    offset: $offset,
+    limit: $limit,
+    order: $order,
+    categoryId: $categoryId,
+    slug: $slug,
+    language: $language,
+    namespace: $namespace,
+    search: $search,
+    chatbotId: $chatbotId
+  ) {
     id,
     slug,
     title,
@@ -42,6 +63,7 @@ query($offset: Int, $limit: Int, $order: String, $categoryId: Int, $slug: String
     createdAt,
     payload,
     namespace,
+    chatbotId,
     category {
       id,
       name
@@ -112,6 +134,7 @@ const Contents = ({
   columns,
   plugins
  }) => {
+  const { state } = useMCContext();
   const [filters, setFilters] = useState(null);
   const [content, setContent] = useState(null);
   const table = useRef();
@@ -164,7 +187,7 @@ const Contents = ({
       <CustomTable
         ref={table}
         query={CONTENTS}
-        variables={{ namespace }}
+        variables={{ namespace, chatbotId: state.chatbotId }}
         initialSortField="createdAt"
         initialSortDirection="desc"
         toolbar={(

@@ -4,6 +4,8 @@ import PropTypes from 'prop-types';
 import { useQuery } from 'react-apollo';
 import _ from 'lodash';
 
+import useMCContext from '../../../src/hooks/mc-context';
+
 import { SEARCH } from './queries';
 import renderItem from './views/render-item';
 import renderUserAsString from './views/render-user-as-string';
@@ -16,12 +18,14 @@ const UserAutocomplete = ({
   excludeIds = null,
   placeholder = null
 }) => {
+  const { state } = useMCContext();
   const [search, setSearch] = useState(null);
   const [items, setItems] = useState(null);
 
   const variables = {
     search: search != null ? search : undefined,
-    id: search == null ? (value != null ? value.id : 0) : undefined
+    id: search == null ? (value != null ? value.id : 0) : undefined,
+    chatbotId: state.chatbotId
   };
   const { client } = useQuery(SEARCH, {
     fetchPolicy: 'network-only',
@@ -69,7 +73,6 @@ const UserAutocomplete = ({
           onSelect={item => {
             if (item != null) {
               setSearch(null);
-              console.log('due')
               onChange(item);
             }
           }}

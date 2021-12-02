@@ -21,6 +21,7 @@ module.exports = function(RED) {
           debug: botConfiguration.debug,
           webHook: botConfiguration.webHook,
           connectMode: botConfiguration.connectMode,
+          chatbotId: botConfiguration.chatbotId,
           RED: RED
         });
       },
@@ -35,7 +36,8 @@ module.exports = function(RED) {
         connectMode: config.connectMode,
         storeMessages: config.storeMessages,
         enableMissionControl: config.enableMissionControl,
-        inspectMessages: config.inspectMessages
+        inspectMessages: config.inspectMessages,
+        chatbotId: config.chatbotId
       })
     ),
     {

@@ -1,8 +1,4 @@
-const fs = require('fs');
 const Sequelize = require('sequelize');
-const { resolve } = require('path');
-const moment = require('moment');
-const lcd = require('../lib/lcd/index');
 
 const GraphQLServer = require('./graphql');
 
@@ -12,7 +8,7 @@ const logging = process.env.DEBUG != null;
 
 module.exports = mcSettings => {
   if (exportCache != null) {
-    return exportCache;;
+    return exportCache;
   }
   const { dbPath } = mcSettings;
 
@@ -26,10 +22,12 @@ module.exports = mcSettings => {
   const Configuration = sequelize.define('configuration', {
     namespace: Sequelize.STRING,
     payload: Sequelize.TEXT,
-    ts: Sequelize.DATE
+    ts: Sequelize.DATE,
+    chatbotId: Sequelize.TEXT
   }, {
     indexes: [
-      { name: 'configuration_namespace', using: 'BTREE', fields: ['namespace'] }
+      { name: 'configuration_namespace', using: 'BTREE', fields: ['namespace'] },
+      { name: 'configuration_chatbotId', using: 'BTREE', fields: ['chatbotId'] }
     ]
   });
 
@@ -42,7 +40,8 @@ module.exports = mcSettings => {
     payload: Sequelize.TEXT,
     latitude: Sequelize.DOUBLE,
     longitude: Sequelize.DOUBLE,
-    geohash: Sequelize.STRING
+    geohash: Sequelize.STRING,
+    chatbotId: Sequelize.TEXT
   }, {
     indexes: [
       { name: 'content_title', using: 'BTREE', fields: ['title'] },
@@ -51,18 +50,21 @@ module.exports = mcSettings => {
       { name: 'content_language', using: 'BTREE', fields: ['language'] },
       { name: 'content_namespace', using: 'BTREE', fields: ['namespace'] },
       { name: 'content_geohash', using: 'BTREE', fields: ['geohash'] },
+      { name: 'content_chatbotId', using: 'BTREE', fields: ['chatbotId'] },
     ]
   });
 
   const Category = sequelize.define('category', {
     name: Sequelize.STRING,
     language: Sequelize.STRING,
-    namespace: Sequelize.STRING
+    namespace: Sequelize.STRING,
+    chatbotId: Sequelize.TEXT
   }, {
     indexes: [
       { name: 'category_name', using: 'BTREE', fields: ['name'] },
       { name: 'category_language', using: 'BTREE', fields: ['language'] },
-      { name: 'category_namespace', using: 'BTREE', fields: ['namespace'] }
+      { name: 'category_namespace', using: 'BTREE', fields: ['namespace'] },
+      { name: 'categoy_chatbotId', using: 'BTREE', fields: ['chatbotId'] }
     ]
   });
 
@@ -89,7 +91,8 @@ module.exports = mcSettings => {
     type: Sequelize.TEXT,
     content: Sequelize.TEXT,
     inbound: Sequelize.BOOLEAN,
-    ts: Sequelize.DATE
+    ts: Sequelize.DATE,
+    chatbotId: Sequelize.TEXT
   }, {
     indexes: [
       { name: 'message_chatid', using: 'BTREE', fields: ['chatId'] },
@@ -100,7 +103,8 @@ module.exports = mcSettings => {
       { name: 'message_flag', using: 'BTREE', fields: ['flag'] },
       { name: 'message_type', using: 'BTREE', fields: ['type'] },
       { name: 'message_inbound', using: 'BTREE', fields: ['inbound'] },
-      { name: 'message_ts', using: 'BTREE', fields: ['ts'] }
+      { name: 'message_ts', using: 'BTREE', fields: ['ts'] },
+      { name: 'message_chatbotId', using: 'BTREE', fields: ['chatbotId'] }
     ]
   });
 
@@ -112,11 +116,13 @@ module.exports = mcSettings => {
     avatar: Sequelize.STRING,
     email: Sequelize.STRING,
     payload: Sequelize.TEXT,
-    permissions: Sequelize.STRING
+    permissions: Sequelize.STRING,
+    chatbotId: Sequelize.TEXT
   }, {
     indexes: [
       { name: 'admin_username', using: 'BTREE', fields: ['username'] },
-      { name: 'admin_password', using: 'BTREE', fields: ['password'] }
+      { name: 'admin_password', using: 'BTREE', fields: ['password'] },
+      { name: 'admin_chatbotId', using: 'BTREE', fields: ['chatbotId'] }
     ],
     /*getterMethods: {
       payload: function() {
@@ -144,13 +150,15 @@ module.exports = mcSettings => {
     last_name: Sequelize.STRING,
     username: Sequelize.STRING,
     language: Sequelize.STRING,
-    payload: Sequelize.TEXT
+    payload: Sequelize.TEXT,
+    chatbotId: Sequelize.TEXT
   }, {
     indexes: [
       { name: 'user_userid', using: 'BTREE', fields: ['userId'] },
       { name: 'user_email', using: 'BTREE', fields: ['email'] },
       { name: 'user_username', using: 'BTREE', fields: ['username'] },
-      { name: 'user_language', using: 'BTREE', fields: ['language'] }
+      { name: 'user_language', using: 'BTREE', fields: ['language'] },
+      { name: 'user_chatbotId', using: 'BTREE', fields: ['chatbotId'] }
     ],
     /*getterMethods: {
       payload: function() {
@@ -204,13 +212,15 @@ module.exports = mcSettings => {
     latitude: Sequelize.DOUBLE,
     longitude: Sequelize.DOUBLE,
     geohash: Sequelize.STRING,
-    geohash_int: Sequelize.INTEGER
+    geohash_int: Sequelize.INTEGER,
+    chatbotId: Sequelize.TEXT
   }, {
     indexes: [
       { name: 'record_userid', using: 'BTREE', fields: ['userId'] },
       { name: 'record_type', using: 'BTREE', fields: ['type'] },
       { name: 'record_status', using: 'BTREE', fields: ['status'] },
       { name: 'record_geohash', using: 'BTREE', fields: ['geohash'] },
+      { name: 'record_chatbotId', using: 'BTREE', fields: ['chatbotId'] }
     ]
   })
 
@@ -242,9 +252,11 @@ module.exports = mcSettings => {
   const ChatBot = sequelize.define('chatbot', {
     name: Sequelize.STRING,
     guid: Sequelize.STRING,
-    description: Sequelize.TEXT
+    description: Sequelize.TEXT,
+    chatbotId: Sequelize.TEXT
   }, {
     indexes: [
+      { name: 'chatbot_chatbotId', using: 'BTREE', fields: ['chatbotId'] }
     ]
   });
 

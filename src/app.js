@@ -1,5 +1,6 @@
 import React, { useReducer, useEffect, useState, useMemo} from 'react';
 import ReactDOM from 'react-dom';
+import gql from 'graphql-tag';
 import { ApolloProvider } from 'react-apollo';
 import { Container, Content, Loader } from 'rsuite';
 import {
@@ -8,6 +9,14 @@ import {
   Route
 } from 'react-router-dom';
 import { CodePlug, plug, useCodePlug } from 'code-plug';
+
+plug('reducers', (state, action) => {
+  if (action.type === 'selectChatbot') {
+    console.log('setting chatbot id state', action.chatbotId)
+    return { ...state, chatbotId: action.chatbotId };
+  }
+  return state;
+});
 
 
 // Define the global scope to store the components shared with plugins
@@ -68,6 +77,7 @@ import * as globalUseHttp from 'use-http';
 import * as globalGraphQLTag from 'graphql-tag';
 import * as globalReactApollo from 'react-apollo';
 import globalUseSocket from './hooks/socket';
+import useLocalStorage from './hooks/use-local-storage';
 
 window.globalLibs.react = globalReact;
 window.globalLibs['prop-types'] = globalPropTypes;
@@ -80,20 +90,39 @@ window.globalLibs['react-apollo'] = globalReactApollo;
 window.globalLibs['hooks-socket'] = globalUseSocket;
 
 const initialState = {
-  user: null
+  user: null,
+  chatbotId: localStorage.getItem('chatbotId')
 };
 
-const usePrefetchedData = () => {
+const GET_CHATBOTS = gql`
+query{
+	chatbots {
+    id,
+    chatbotId,
+    name,
+    description,
+    chatbotId
+  }
+}`;
+
+const usePrefetchedData = (client) => {
   const [platforms, setPlatforms] = useState([]);
   const [eventTypes, setEventTypes] = useState([]);
   const [messageTypes, setMessageTypes] = useState([]);
   const [activeChatbots, setActiveChatbots] = useState([]);
+  const [chatbots, setChatbots] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch('/redbot/platforms')
       .then(response => response.json())
       .then(response => setPlatforms(response.platforms))
+      .then(() => client.query({ query: GET_CHATBOTS, fetchPolicy: 'network-only'}))
+      .then(response => {
+        if (response.data != null && response.data.chatbots) {
+          setChatbots(response.data.chatbots);
+        }
+      })
       .then(() => fetch('/redbot/globals'))
       .then(response => response.json())
       .then(response => {
@@ -104,17 +133,17 @@ const usePrefetchedData = () => {
       });
   }, []);
 
-  return { platforms, eventTypes, messageTypes, activeChatbots, loading };
+  return { platforms, eventTypes, messageTypes, activeChatbots, loading, chatbots };
 };
 
-
 const AppRouter = ({ codePlug, bootstrap }) => {
+  const [chatbotId] = useLocalStorage('chatbotId', undefined);
   const client = useClient(bootstrap.settings);
   const { items } = useCodePlug('pages', { permission: { '$intersect': bootstrap.user.permissions }})
-  const { platforms, eventTypes, messageTypes, activeChatbots, loading } = usePrefetchedData();
+  const { platforms, eventTypes, messageTypes, activeChatbots, chatbots, loading } = usePrefetchedData(client);
 
   const reducers = useMemo(() => compose(...codePlug.getItems('reducers').map(item => item.view )));
-  const [state, dispatch] = useReducer(reducers, { ...initialState, ...bootstrap });
+  const [state, dispatch] = useReducer(reducers, { ...initialState, chatbotId, ...bootstrap });
 
   if (loading) {
     return (
@@ -126,7 +155,16 @@ const AppRouter = ({ codePlug, bootstrap }) => {
 
   return (
     <ApolloProvider client={client}>
-      <AppContext.Provider value={{ state, dispatch, client, platforms, eventTypes, messageTypes, activeChatbots }}>
+      <AppContext.Provider value={{
+        state,
+        dispatch,
+        client,
+        platforms,
+        eventTypes,
+        messageTypes,
+        activeChatbots,
+        chatbots
+      }}>
         <WebSocketReact dispatch={dispatch}>
           <ModalProvider>
             <Router basename="/mc">

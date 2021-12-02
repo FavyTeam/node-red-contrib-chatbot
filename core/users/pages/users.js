@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useContext } from 'react';
 import { Table, Icon, ButtonGroup, Button } from 'rsuite';
 import gql from 'graphql-tag';
 
@@ -12,6 +12,7 @@ import CustomTable from '../../../src/components/table';
 import { Input } from '../../../src/components/table-filters';
 import ContextModal from '../../../src/components/context-modal';
 import useCurrentUser from '../../../src/hooks/current-user';
+import useMCContext from '../../../src/hooks/mc-context';
 
 import '../styles/users.scss';
 import useUsers from '../hooks/users';
@@ -19,13 +20,13 @@ import useMergeUser from '../hooks/merge-user';
 import ModalUser from '../views/modal-user';
 
 const USERS = gql`
-query ($limit: Int, $offset: Int, $order: String, $username: String, $userId: String) {
+query ($limit: Int, $offset: Int, $order: String, $username: String, $userId: String, $chatbotId: String) {
   counters {
     rows: users {
      count(username: $username, userId: $userId)
     }
   }
-  rows: users(limit: $limit, offset: $offset, order: $order, username: $username, userId: $userId) {
+  rows: users(limit: $limit, offset: $offset, order: $order, username: $username, userId: $userId, chatbotId: $chatbotId) {
     id,
     username,
     userId,
@@ -52,9 +53,12 @@ const Users = () => {
   const [ context, setContext ] = useState(null);
   const { saving, error,  deleteUser, editUser } = useUsers();
   const { can } = useCurrentUser();
+  const { state } = useMCContext();
   const { mergeModal, mergeUser } = useMergeUser({
     onComplete: () => table.current.refetch()
   });
+
+  console.log('users chatbotit', state.chatbotId)
 
   return (
     <PageContainer className="page-users">
@@ -86,6 +90,7 @@ const Users = () => {
         height={600}
         initialSortField="createdAt"
         initialSortDirection="desc"
+        variables={{ chatbotId: state.chatbotId }}
         toolbar={(
           <div>
             <Button appearance="primary" onClick={() => table.current.refetch()}>Refresh</Button>
