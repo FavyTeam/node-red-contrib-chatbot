@@ -36,10 +36,17 @@ query(
 ) {
   counters {
     rows: contents {
-     count(categoryId: $categoryId, slug: $slug, language: $language, namespace: $namespace, search: $search)
+     count(
+       categoryId: $categoryId,
+       slug: $slug,
+       language: $language,
+       namespace: $namespace,
+       search: $search,
+       chatbotId: $chatbotId
+      )
     }
   }
-  categories(namespace: $namespace) {
+  categories(namespace: $namespace, chatbotId: $chatbotId) {
     id,
     name
   }
@@ -177,7 +184,7 @@ const Contents = ({
             if (content.id != null) {
               await editContent({ variables: { id: content.id, content }})
             } else {
-              await createContent({ variables: { content: { ...content, namespace } } });
+              await createContent({ variables: { content: { ...content, namespace, chatbotId: state.chatbotId } } });
             }
             setContent(null);
             table.current.refetch();

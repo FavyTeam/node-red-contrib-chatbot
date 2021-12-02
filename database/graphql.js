@@ -1109,12 +1109,13 @@ module.exports = ({
           chatId: { type: GraphQLString },
           userId: { type: GraphQLString },
           flag: { type: GraphQLString },
-          inbound: { type: GraphQLBoolean }
+          inbound: { type: GraphQLBoolean },
+          chatbotId: { type: GraphQLString }
         },
         description: 'Total messages',
-        resolve: (root, { type, transport, messageId, chatId, userId, flag, inbound }) => Message.count({
+        resolve: (root, { type, transport, messageId, chatId, userId, flag, inbound, chatbotId }) => Message.count({
           where: compactObject({
-            type, transport, messageId, chatId, userId, flag, inbound
+            type, transport, messageId, chatId, userId, flag, inbound, chatbotId
           })
         })
       }
@@ -1166,11 +1167,13 @@ module.exports = ({
         description: 'Total users',
         args: {
           userId: { type: GraphQLString },
-          username: { type: GraphQLString }
+          username: { type: GraphQLString },
+          chatbotId: { type: GraphQLString }
         },
-        resolve: (root, { userId, username }) => User.count({
+        resolve: (root, { userId, username, chatbotId }) => User.count({
           where: compactObject({
             userId,
+            chatbotId,
             username: username != null ? { [Op.like]: `%${username}%` } : null
           })
         })
@@ -1200,11 +1203,13 @@ module.exports = ({
         type: GraphQLInt,
         description: 'Total admins',
         args: {
-          username: { type: GraphQLString }
+          username: { type: GraphQLString },
+          chatbotId: { type: GraphQLString }
         },
-        resolve: (root, { username }) => Admin.count({
+        resolve: (root, { username, chatbotId }) => Admin.count({
           where: compactObject({
-            username: username != null ? { [Op.like]: `%${username}%` } : null
+            username: username != null ? { [Op.like]: `%${username}%` } : null,
+            chatbotId
           })
         })
       }
@@ -1218,12 +1223,13 @@ module.exports = ({
       count: {
         type: GraphQLInt,
         args: {
-          namespace: { type: GraphQLString }
+          namespace: { type: GraphQLString },
+          chatbotId: { type: GraphQLString }
         },
         description: 'Total categories',
-        resolve: (root, { namespace }) => Category.count({
+        resolve: (root, { namespace, chatbotId }) => Category.count({
           where: compactObject({
-            namespace
+            namespace, chatbotId
           })
         })
       }
@@ -1239,12 +1245,13 @@ module.exports = ({
         args: {
           type: { type: GraphQLString },
           userId: { type: GraphQLString },
-          status: { type: GraphQLString }
+          status: { type: GraphQLString },
+          chatbotId: { type: GraphQLString }
         },
         description: 'Total records',
-        resolve: (root, { type, userId, status }) => Record.count({
+        resolve: (root, { type, userId, status, chatbotId }) => Record.count({
           where: compactObject({
-            type, userId, status
+            type, userId, status, chatbotId
           })
         })
       }
@@ -1318,11 +1325,12 @@ module.exports = ({
             language: { type: GraphQLString },
             namespace: { type: GraphQLString },
             title: { type: GraphQLString },
-            search: { type: GraphQLString }
+            search: { type: GraphQLString },
+            chatbotId: { type: GraphQLString }
           },
-        resolve(root, { slug, categoryId, language, title, id, ids, namespace, search, slugs }) {
+        resolve(root, { slug, categoryId, language, title, id, ids, namespace, search, slugs, chatbotId }) {
           return Content.count({
-            where: buildContentQuery({ slug, categoryId, language, title, id, ids, namespace, search, slugs })
+            where: buildContentQuery({ slug, categoryId, language, title, id, ids, namespace, search, slugs, chatbotId })
           });
         }
       }

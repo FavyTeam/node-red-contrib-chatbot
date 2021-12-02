@@ -8,11 +8,13 @@ const { Grid } = Placeholder
 import PageContainer from '../../../../src/components/page-container';
 import Breadcrumbs from '../../../../src/components/breadcrumbs';
 import SmartDate from '../../../../src/components/smart-date';
+import useMCContext from '../../../../src/hooks/mc-context';
 
 import useCategories from '../hooks/category';
 import ModalCategory from '../views/modal-category';
 
 const Categories = ({ namespace, title, breadcrumbs }) => {
+  const { state } = useMCContext();
   const [ cursor, setCursor ] = useState({ page: 1, limit: 10, sortField: 'createdAt', sortType: 'desc' });
   const [ category, setCategory ] = useState(null);
 
@@ -27,7 +29,7 @@ const Categories = ({ namespace, title, breadcrumbs }) => {
     editCategory,
     createCategory,
     refetch
-  } = useCategories({ limit, page, sortField, sortType, namespace });
+  } = useCategories({ limit, page, sortField, sortType, namespace, chatbotId: state.chatbotId });
 
   return (
     <PageContainer className="page-contents">
@@ -41,7 +43,10 @@ const Categories = ({ namespace, title, breadcrumbs }) => {
             if (category.id != null) {
               await editCategory({ variables: { id: category.id, category }})
             } else {
-              await createCategory({ variables: { category: { ...category, namespace} } });
+              await createCategory({ variables: {
+                category: { ...category, namespace, chatbotId: state.chatbotId }
+                }
+              });
             }
             // TODO: catch errorrs
             setCategory(null);

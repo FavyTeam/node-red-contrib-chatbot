@@ -23,7 +23,7 @@ const USERS = gql`
 query ($limit: Int, $offset: Int, $order: String, $username: String, $userId: String, $chatbotId: String) {
   counters {
     rows: users {
-     count(username: $username, userId: $userId)
+     count(username: $username, userId: $userId, chatbotId: $chatbotId)
     }
   }
   rows: users(limit: $limit, offset: $offset, order: $order, username: $username, userId: $userId, chatbotId: $chatbotId) {
