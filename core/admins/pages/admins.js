@@ -10,19 +10,32 @@ import SmartDate from '../../../src/components/smart-date';
 import CustomTable from '../../../src/components/table';
 import { Input } from '../../../src/components/table-filters';
 import confirm from '../../../src/components/confirm';
+import useMCContext from '../../../src/hooks/mc-context';
 
 import '../styles/admins.scss';
 import useAdmins from '../hooks/admins';
 import ModalAdmin from '../views/modal-admin';
 
 const ADMINS = gql`
-query ($limit: Int, $offset: Int, $order: String, $username: String) {
+query (
+  $limit: Int,
+  $offset: Int,
+  $order: String,
+  $username: String,
+  $chatbotId: String
+) {
   counters {
     rows: admins {
-     count(username: $username)
+     count(username: $username, chatbotId: $chatbotId)
     }
   }
-  rows: admins(limit: $limit, offset: $offset, order: $order, username: $username) {
+  rows: admins(
+    limit: $limit,
+    offset: $offset,
+    order: $order,
+    username: $username,
+    chatbotId: $chatbotId
+  ) {
     id,
     username,
     first_name,
@@ -38,6 +51,7 @@ query ($limit: Int, $offset: Int, $order: String, $username: String) {
 
 const Admins = () => {
   const table = useRef();
+  const { state } = useMCContext();
   const [ admin, setAdmin ] = useState(null);
   const { saving, error,  deleteAdmin, editAdmin, createAdmin } = useAdmins();
 
@@ -65,6 +79,10 @@ const Admins = () => {
         ref={table}
         query={ADMINS}
         height={600}
+        labels={{
+          empty: 'No admins'
+        }}
+        variables={{ chatbotId: state.chatbotId }}
         initialSortField="createdAt"
         initialSortDirection="desc"
         toolbar={(

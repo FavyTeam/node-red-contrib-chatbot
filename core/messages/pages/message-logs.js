@@ -18,12 +18,25 @@ import { Input } from '../../../src/components/table-filters';
 import { useModal } from '../../../src/components/modal';
 import CustomTable from '../../../src/components/table';
 import useClient from '../../../src/hooks/client';
+import useMCContext from '../../../src/hooks/mc-context';
 
 import '../styles/message-logs.scss';
 import PreviewMessage from '../views/preview-message';
 
 const MESSAGES = gql`
-query ($limit: Int, $offset: Int, $order: String, $inbound: Boolean, $type: String, $transport: String, $messageId: String, $chatId: String, $userId: String, $flag: String) {
+query (
+  $limit: Int,
+  $offset: Int,
+  $order: String,
+  $inbound: Boolean,
+  $type: String,
+  $transport: String,
+  $messageId: String,
+  $chatId: String,
+  $userId: String,
+  $flag: String,
+  $chatbotId: String
+) {
   counters {
     rows: messages {
       count(
@@ -33,7 +46,8 @@ query ($limit: Int, $offset: Int, $order: String, $inbound: Boolean, $type: Stri
         chatId: $chatId,
         messageId: $messageId,
         userId: $userId,
-        flag: $flag
+        flag: $flag,
+        chatbotId: $chatbotId
       )
     }
   }
@@ -47,7 +61,8 @@ query ($limit: Int, $offset: Int, $order: String, $inbound: Boolean, $type: Stri
     chatId: $chatId,
     messageId: $messageId,
     userId: $userId,
-    flag: $flag
+    flag: $flag,
+    chatbotId: $chatbotId
   ) {
     id
     chatId
@@ -84,6 +99,7 @@ const SelectInbound = [
 const MessageLogs = ({ messageTypes, platforms }) => {
   const table = useRef();
   const client = useApolloClient();
+  const { state } = useMCContext();
   const { open, close, update } = useModal({
     view: PreviewMessage,
     labelSubmit: 'Close',
@@ -102,6 +118,10 @@ const MessageLogs = ({ messageTypes, platforms }) => {
         query={MESSAGES}
         initialSortField="createdAt"
         initialSortDirection="desc"
+        variables={{ chatbotId: state.chatbotId }}
+        labels={{
+          empty: 'No messages'
+        }}
         toolbar={(
           <Button
             appearance="primary"

@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import gravatar from 'gravatar';
-import { Tooltip, Whisper, Header, Navbar, Dropdown, Nav, Icon, IconButton, Avatar } from 'rsuite';
+import { Tooltip, Whisper, Header, Navbar, Dropdown, Nav, Icon, IconButton, Avatar, SelectPicker } from 'rsuite';
 import { useCodePlug } from 'code-plug';
 import { Link, useHistory } from 'react-router-dom';
 
@@ -61,20 +61,19 @@ const renderButton = (props, ref) => {
 const ChatbotsSelector = ({ chatbots, value, onChange }) => {
   const chatbot = chatbots.find(({ chatbotId }) => chatbotId === value);
   console.log('re-render selected', value, '---', chatbot)
+
   return (
-    <Dropdown
-      title={chatbot?.name ?? 'Not selected'}
-      onSelect={(chatbotId) => onChange(chatbotId)}
-      renderTitle={renderButton}
-      placement="bottomEnd"
-    >
-      {chatbots.map(({ chatbotId, name }) => (
-        <Dropdown.Item
-          eventKey={chatbotId}
-          key={chatbotId}
-        >{name}</Dropdown.Item>
-      ))}
-    </Dropdown>
+    <SelectPicker
+      style={{ marginTop: '11px', marginRight: '15px' }}
+      value={value}
+      data={chatbots.map(({ chatbotId, name }) => ({ value: chatbotId, label: name }))}
+      appearance="subtle"
+      placeholder="Select chatbot"
+      cleanable={false}
+      searchable={false}
+      menuStyle={{ zIndex: 100000000 }}
+      onChange={onChange}
+    />
   )
 };
 

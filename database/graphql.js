@@ -2060,11 +2060,13 @@ module.exports = ({
             id: { type: GraphQLInt },
             order: { type: GraphQLString },
             username: { type: GraphQLString },
-            search: { type: GraphQLString }
+            search: { type: GraphQLString },
+            chatbotId: { type: GraphQLString }
           },
-          resolve(root, { order, offset = 0, limit = 10, username, id, search }) {
+          resolve(root, { order, offset = 0, limit = 10, username, id, search, chatbotId }) {
             const whereParams = compactObject({
               id,
+              chatbotId,
               username: username != null ? { [Op.like]: `%${username}%` } : null,
             });
             if (search != null) {
