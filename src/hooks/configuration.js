@@ -1,11 +1,13 @@
 import gql from 'graphql-tag';
 import { useQuery, useMutation } from 'react-apollo';
 
+import useMCContext from './mc-context';
+
 import useSocket from './socket';
 
 const GET_CONFIGURATION = gql`
-query($namespace: String) {
-  configurations(namespace: $namespace) {
+query($namespace: String, $chatbotId: String) {
+  configurations(namespace: $namespace, chatbotId: $chatbotId) {
     id
     namespace
     payload
@@ -14,7 +16,7 @@ query($namespace: String) {
 `;
 
 const UPDATE_CONFIGURATION = gql`
-mutation($configuration: NewConfiguration!) {
+mutation($configuration: InputConfiguration!) {
   createConfiguration(configuration: $configuration) {
     id,
     namespace,
@@ -28,8 +30,9 @@ const useConfiguration = ({
   onCompleted = () => {},
   onLoaded = () => {}
 }) => {
+  const { state } = useMCContext();
   const { loading, error, data } = useQuery(GET_CONFIGURATION, {
-    variables: { namespace },
+    variables: { namespace, chatbotId: state.chatbotId },
     onCompleted: data => {
       let configurationValue;
       if (data != null && data.configurations != null && data.configurations.length !== 0) {
@@ -69,6 +72,7 @@ const useConfiguration = ({
         variables: {
           configuration: {
             namespace,
+            chatbotId: state.chatbotId,
             payload: JSON.stringify(configuration)
           }
         }

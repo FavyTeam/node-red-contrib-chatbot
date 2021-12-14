@@ -213,6 +213,9 @@ module.exports = ({
         type: userType,
         description: 'User related to this chatId',
         resolve: (chatId) => User.findOne({ where: { userId: chatId.userId }})
+      },
+      chatbotId: {
+        type: GraphQLString
       }
     })
   });
@@ -450,6 +453,9 @@ module.exports = ({
           const where = { userId: user.userId };
           if (args.transport != null) {
             where.transport = args.transport;
+          }
+          if (user.chatbotId != null) {
+            where.chatbotId = user.chatbotId;
           }
           return ChatId.findAll({ where });
         }
@@ -1089,8 +1095,8 @@ module.exports = ({
     }
   });
 
-  const newConfigurationType = new GraphQLInputObjectType({
-    name: 'NewConfiguration',
+  const InputConfigurationType = new GraphQLInputObjectType({
+    name: 'InputConfiguration',
     description: 'tbd',
     fields: () => ({
       namespace: {
@@ -1474,17 +1480,18 @@ module.exports = ({
         createConfiguration: {
           type: configurationType,
           args: {
-            configuration: { type: new GraphQLNonNull(newConfigurationType) }
+            configuration: { type: new GraphQLNonNull(InputConfigurationType) }
           },
-          resolve(root, { configuration }) {
-            return Configuration.findOne({ where: { namespace: configuration.namespace }})
-              .then(found => {
-                if (found != null) {
-                  return Configuration.update(configuration, { where: { id: found.id }})
-                    .then(() => Configuration.findByPk(found.id));
-                }
-                return Configuration.create(configuration);
-              });
+          resolve: async (root, { configuration }) => {
+            const found = await Configuration.findOne({
+              where: compactObject({ namespace: configuration.namespace, chatbotId: configuration.chatbotId })
+            });
+            if (found != null) {
+              await Configuration.update(configuration, { where: { id: found.id }})
+              return await Configuration.findByPk(found.id);
+            } else {
+              return await Configuration.create(configuration);
+            }
           }
         },
 
@@ -1971,7 +1978,6 @@ module.exports = ({
             let userId;
             // if no chatId, the create the user and the related chatId-transport using the userId of the message
             if (existingChatId == null) {
-
               try {
                 await User.create(user);
               } catch(e) {
@@ -1980,13 +1986,14 @@ module.exports = ({
                 // then get the current user
                 // currentUser = await User.findOne({ where: { userId: user.userId }});
                 // eslint-disable-next-line no-console
-                console.log(`Error creating user ${JSON.stringify(user)}`);
+                console.log(`Error creating user ${JSON.stringify(user)}, perhaps user already exists`);
               }
               userId = user.userId;
               if (message.chatId != null) {
                 await ChatId.create({
                   userId: user.userId,
                   chatId: message.chatId,
+                  chatbotId: message.chatbotId,
                   transport: message.transport
                 });
               } else {
@@ -2040,7 +2047,8 @@ module.exports = ({
             offset: { type: GraphQLInt },
             limit: { type: GraphQLInt },
             order: { type: GraphQLString },
-            namespace: { type: GraphQLString }
+            namespace: { type: GraphQLString },
+            chatbotId: { type: GraphQLString }
           },
           resolve: resolver(Configuration)
         },

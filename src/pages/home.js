@@ -7,6 +7,7 @@ import withState from '../wrappers/with-state';
 import useConfiguration from '../hooks/configuration';
 import { useCodePlug } from 'code-plug';
 import useCurrentUser from '../hooks/current-user';
+import useMCContext from '..//hooks/mc-context';
 
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
@@ -39,7 +40,7 @@ plug('reducers', (state, action) => {
 
 const HomePage = ({ count, dispatch, user }) => {
   const { permissionQuery } = useCurrentUser();
-
+  const { state } = useMCContext();
   const { items } = useCodePlug('widgets', permissionQuery);
   const { loading, saving, error, data, update } = useConfiguration({
     namespace: 'dashboard',
