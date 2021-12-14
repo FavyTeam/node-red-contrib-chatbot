@@ -7,19 +7,8 @@ const { StringType } = Schema.Types;
 
 const chatbotModel = Schema.Model({
   name: StringType()
-    .isRequired('Name is required'),
-  guid: StringType()
-    .rangeLength(36, 36, 'Wrong length (should be 36 chars)')
     .isRequired('Name is required')
 });
-
-const uuidv4 = () => {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
-    .replace(/[xy]/g, c => {
-      const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
-};
 
 const ConfigurationForm = ({
   value,
@@ -47,26 +36,12 @@ const ConfigurationForm = ({
       >
         <FormGroup>
           <ControlLabel>Chatbot Id</ControlLabel>
-          <FlexboxGrid justify="space-between">
-            <FlexboxGrid.Item colspan={20}>
-              <FormControl
-                disabled={disabled}
-                name="guid"
-              />
-            </FlexboxGrid.Item>
-            <FlexboxGrid.Item colspan={3}>
-              <Button
-                onClick={() => {
-                  setFormValue({ guid: uuidv4() })
-                }}
-                disabled={disabled}
-              >Generate</Button>
-
-            </FlexboxGrid.Item>
-          </FlexboxGrid>
-
+          <FormControl
+            disabled={true}
+            name="chatbotId"
+          />
           <HelpBlock>
-            This is a unique identifier of the chatbot.
+            This is a unique identifier of the chatbot, it's defined in Node-RED configuration of the chatbot.
           </HelpBlock>
         </FormGroup>
         <FormGroup>

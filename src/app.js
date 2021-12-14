@@ -11,9 +11,16 @@ import {
 import { CodePlug, plug, useCodePlug } from 'code-plug';
 
 plug('reducers', (state, action) => {
+
   if (action.type === 'selectChatbot') {
-    console.log('setting chatbot id state', action.chatbotId)
     return { ...state, chatbotId: action.chatbotId };
+  } else if (action.type === 'setChatbots') {
+    return { ...state, chatbots: action.chatbots };
+  } else if (action.type === 'setChatbot') {
+    return {
+      ...state,
+      chatbots: state.chatbots.map(chatbot => chatbot.id === action.chatbot.id ? action.chatbot : chatbot )
+    };
   }
   return state;
 });
@@ -91,27 +98,28 @@ window.globalLibs['hooks-socket'] = globalUseSocket;
 
 const initialState = {
   user: null,
-  chatbotId: localStorage.getItem('chatbotId')
+  chatbots: [],
+  chatbotId: null
 };
 
 const GET_CHATBOTS = gql`
-query{
+query {
 	chatbots {
     id,
     chatbotId,
     name,
-    description,
-    chatbotId
+    description
   }
 }`;
 
-const usePrefetchedData = (client) => {
+const usePrefetchedData = (client, { onComplete = () => {} }) => {
+  // TODO move all this in the state
   const [platforms, setPlatforms] = useState([]);
   const [eventTypes, setEventTypes] = useState([]);
   const [messageTypes, setMessageTypes] = useState([]);
   const [activeChatbots, setActiveChatbots] = useState([]);
-  const [chatbots, setChatbots] = useState([]);
   const [loading, setLoading] = useState(true);
+  let chatbots = [];
 
   useEffect(() => {
     fetch('/redbot/platforms')
@@ -120,7 +128,7 @@ const usePrefetchedData = (client) => {
       .then(() => client.query({ query: GET_CHATBOTS, fetchPolicy: 'network-only'}))
       .then(response => {
         if (response.data != null && response.data.chatbots) {
-          setChatbots(response.data.chatbots);
+          chatbots = response.data.chatbots;
         }
       })
       .then(() => fetch('/redbot/globals'))
@@ -130,6 +138,7 @@ const usePrefetchedData = (client) => {
         setMessageTypes(response.messageTypes);
         setActiveChatbots(response.activeChatbots);
         setLoading(false);
+        onComplete({ platforms, eventTypes, messageTypes, activeChatbots, loading, chatbots });
       });
   }, []);
 
@@ -140,10 +149,13 @@ const AppRouter = ({ codePlug, bootstrap }) => {
   const [chatbotId] = useLocalStorage('chatbotId', undefined);
   const client = useClient(bootstrap.settings);
   const { items } = useCodePlug('pages', { permission: { '$intersect': bootstrap.user.permissions }})
-  const { platforms, eventTypes, messageTypes, activeChatbots, chatbots, loading } = usePrefetchedData(client);
+  const { platforms, eventTypes, messageTypes, activeChatbots, loading, chatbots } = usePrefetchedData(
+    client, {
+      onComplete: ({ chatbots }) => dispatch({ type: 'setChatbots',  chatbots })
+    });
 
   const reducers = useMemo(() => compose(...codePlug.getItems('reducers').map(item => item.view )));
-  const [state, dispatch] = useReducer(reducers, { ...initialState, chatbotId, ...bootstrap });
+  const [state, dispatch] = useReducer(reducers, { ...initialState, chatbotId, chatbots, ...bootstrap });
 
   if (loading) {
     return (

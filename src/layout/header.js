@@ -4,6 +4,7 @@ import gravatar from 'gravatar';
 import { Tooltip, Whisper, Header, Navbar, Dropdown, Nav, Icon, IconButton, Avatar, SelectPicker } from 'rsuite';
 import { useCodePlug } from 'code-plug';
 import { Link, useHistory } from 'react-router-dom';
+import _ from 'lodash';
 
 import AppContext from '../common/app-context';
 import useCurrentUser from '../hooks/current-user';
@@ -18,6 +19,17 @@ const initials = user => {
     return user.lastName.substr(0, 2);
   }
   return '';
+}
+
+const extendedName = user => {
+  const names = [];
+  if (!_.isEmpty(user.firstName)) {
+    names.push(user.firstName);
+  }
+  if (!_.isEmpty(user.lastName)) {
+    names.push(user.lastName);
+  }
+  return !_.isEmpty(names) ? names.join(' ') : user.username;
 }
 
 const sortBy = (a, b) => {
@@ -60,7 +72,6 @@ const renderButton = (props, ref) => {
 
 const ChatbotsSelector = ({ chatbots, value, onChange }) => {
   const chatbot = chatbots.find(({ chatbotId }) => chatbotId === value);
-  console.log('re-render selected', value, '---', chatbot)
 
   return (
     <SelectPicker
@@ -80,7 +91,7 @@ const ChatbotsSelector = ({ chatbots, value, onChange }) => {
 const AppHeader = () => {
   const [, setChatbotId] = useLocalStorage('chatbotId', undefined);
   const { user } = useCurrentUser();
-  const { state, chatbots, dispatch } = useContext(AppContext);
+  const { state, dispatch } = useContext(AppContext);
   const history = useHistory();
   const { permissionQuery } = useCurrentUser();
   const { props } = useCodePlug('menu', permissionQuery);
@@ -105,6 +116,14 @@ const AppHeader = () => {
             }
           </Nav>
           <Nav pullRight>
+            <ChatbotsSelector
+              chatbots={state.chatbots}
+              value={state.chatbotId}
+              onChange={(chatbotId => {
+                dispatch({ type: 'selectChatbot', chatbotId });
+                setChatbotId(chatbotId);
+              })}
+            />
             {user.isEmptyPassword && (
               <Whisper
                 placement="left"
@@ -137,22 +156,13 @@ const AppHeader = () => {
                 />
               </Whisper>
             )}
-            <ChatbotsSelector
-              chatbots={chatbots}
-              value={state.chatbotId}
-              onChange={(chatbotId => {
-                console.log('selected bot', chatbotId)
-                dispatch({ type: 'selectChatbot', chatbotId });
-                setChatbotId(chatbotId);
-              })}
-            />
             <Dropdown
               className="mc-avatar"
               placement="bottomEnd"
               renderTitle={()=> (
                 <Avatar src={user.avatar || gravatar.url(user.email)} circle>{initials(user)}</Avatar>)}
             >
-              <Dropdown.Item><b>{`${user.firstName} ${user.lastName}`}</b></Dropdown.Item>
+              <Dropdown.Item><b>{extendedName(user)}</b></Dropdown.Item>
               <Dropdown.Item onSelect={() => window.location = '/'}>Node-RED</Dropdown.Item>
               <Dropdown.Item divider />
               <Dropdown.Item>Logout</Dropdown.Item>

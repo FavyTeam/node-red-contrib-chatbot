@@ -63,24 +63,29 @@ function sendMessage(topic, payload) {
 
 
 async function bootstrap(server, app, log, redSettings) {
+  const mcSettings = redSettings.RedBot || {};
 
+  if (mcSettings.enableMissionControl !== true) {
+    console.log(lcd.timestamp() + 'Red Bot Mission Control is not enabled.');
+    console.log(lcd.timestamp() + '  ' + lcd.grey('Enable it by adding in Node-RED settings.js:'));
+    console.log(lcd.timestamp() + '  ' + lcd.grey('  // ...'));
+    console.log(lcd.timestamp() + '  ' + lcd.grey('  RedBot: {'));
+    console.log(lcd.timestamp() + '  ' + lcd.grey('    enableMissionControl: true'));
+    console.log(lcd.timestamp() + '  ' + lcd.grey('  }'));
+    console.log(lcd.timestamp() + '  ' + lcd.grey('  // ...'));
+    return;
+  }
 
-  // print version
+  // get current version
   const jsonPackage = fs.readFileSync(__dirname + '/package.json');
   let package;
   try {
     package = JSON.parse(jsonPackage.toString());
-    // eslint-disable-next-line no-console
-    console.log(lcd.white(moment().format('DD MMM HH:mm:ss')
-      + ' - [info] RedBot Mission Control version:')
-      + ' ' + lcd.green(package.version) + lcd.grey(' (node-red-contrib-chatbot-mission-control)'));
   } catch(e) {
-    lcd.error('Unable to open node-red-contrib-chatbot-mission-control/package.json');
+    lcd.error('Unable to open node-red-contrib-chatbot/package.json');
   }
-
   // get mission control configurations
   console.log(lcd.timestamp() + 'Red Bot Mission Control configuration:');
-  const mcSettings = redSettings.missionControl || {};
   mcSettings.version = package.version;
     if (process.env.DEV != null && (process.env.DEV.toLowerCase() === 'true' || process.env.DEV.toLowerCase() === 'dev')) {
     mcSettings.environment = 'development';
@@ -213,9 +218,8 @@ Some **formatting** is _allowed_!`
   });
 
   // eslint-disable-next-line no-console
-  console.log(lcd.white(moment().format('DD MMM HH:mm:ss')
-  + ' - [info] GraphQL ready at :')
-  + ' ' + lcd.green(`http://localhost:${mcSettings.port}${graphQLServer.graphqlPath}`));
+  console.log(lcd.timestamp() + '  ' + lcd.green('GraphQL URL: ')
+  + lcd.grey(`http://localhost:${mcSettings.port}${graphQLServer.graphqlPath}`));
 
   // handle upload file
   app.post(`${mcSettings.root}/api/upload`, fileupload(), async (req, res) => {

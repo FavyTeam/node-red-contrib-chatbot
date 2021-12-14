@@ -50,8 +50,10 @@ const {
   GraphQLList,
   GraphQLBoolean,
   GraphQLInputObjectType,
-  GraphQLScalarType
+  GraphQLScalarType,
+  GraphQLID
 } = require('graphql');
+const { compact } = require('lodash');
 
 const DateType = new GraphQLScalarType({
   name: 'Date',
@@ -132,6 +134,17 @@ module.exports = ({
   sequelize,
   mcSettings
 }) => {
+
+  let _cachedChatbotIds;
+  const createChatbotIdIfNotExist = async (chatbotId) => {
+    if (_cachedChatbotIds == null) {
+      _cachedChatbotIds = await ChatBot.findAll().map(({ chatbotId }) => chatbotId);
+    }
+    if (!_cachedChatbotIds.includes(chatbotId)) {
+      await ChatBot.create({ chatbotId, name: chatbotId });
+      _cachedChatbotIds = [..._cachedChatbotIds, chatbotId];
+    }
+  };
 
   const newUserType = new GraphQLInputObjectType({
     name: 'NewUser',
@@ -1519,11 +1532,12 @@ module.exports = ({
         editChatbot: {
           type: chatbotType,
           args: {
+            id: { type: GraphQLNonNull(GraphQLInt) },
             chatbot: { type: new GraphQLNonNull(inputChatbotType)}
           },
-          async resolve(root, { chatbot }) {
-            const currentChatbot = await ChatBot.findOne();
-            await ChatBot.update(chatbot, { where: { id: currentChatbot.id } });
+          async resolve(root, { chatbot, id }) {
+            await ChatBot.update(chatbot, { where: { id } });
+            return await ChatBot.findOne({ where: { id }});
           }
         },
 
@@ -1944,28 +1958,37 @@ module.exports = ({
           },
           resolve: async function(root, { message }) {
             const { user, ...newMessage } = message;
+            // check if chatbotId exists
+            await createChatbotIdIfNotExist(message.chatbotId);
             // check if exists userid / transport and create or update
             const existingChatId = await ChatId.findOne({
-              where: {
+              where: compact({
                 chatId: message.chatId,
-                transport: message.transport
-              }
+                transport: message.transport,
+                chatbotId: message.chatbotId
+              })
             });
             let userId;
-            let currentUser;
             // if no chatId, the create the user and the related chatId-transport using the userId of the message
             if (existingChatId == null) {
+
               try {
-                currentUser = await User.create(user);
+                await User.create(user);
               } catch(e) {
                 // this could fail, the user already exists (was only deleted the chatId)
                 // keep the existing one, the admin may have enriched the payload
                 // then get the current user
-                currentUser = await User.findOne({ where: { userId: user.userId }});
+                // currentUser = await User.findOne({ where: { userId: user.userId }});
+                // eslint-disable-next-line no-console
+                console.log(`Error creating user ${JSON.stringify(user)}`);
               }
               userId = user.userId;
               if (message.chatId != null) {
-                await ChatId.create({ userId: user.userId, chatId: message.chatId, transport: message.transport });
+                await ChatId.create({
+                  userId: user.userId,
+                  chatId: message.chatId,
+                  transport: message.transport
+                });
               } else {
                 // eslint-disable-next-line no-console
                 console.trace(`Warning: received message without chatId for transport ${message.transport}`)
@@ -1973,6 +1996,7 @@ module.exports = ({
             } else {
               userId = existingChatId.userId;
             }
+            // finally store the message
             const createdMessage = await Message.create({ ...newMessage, userId });
             return createdMessage;
           }
@@ -1988,7 +2012,11 @@ module.exports = ({
 
         chatbot: {
           type: chatbotType,
-          resolve: async() => ChatBot.findOne()
+          args: {
+            id: { type: GraphQLInt },
+            chatbotId: { type: GraphQLString }
+          },
+          resolve: resolver(ChatBot)
         },
 
         chatbots: {

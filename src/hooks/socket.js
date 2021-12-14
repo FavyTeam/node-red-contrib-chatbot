@@ -21,7 +21,7 @@ class RawWebSocket extends React.Component {
   onMessage = (topic, payload) => this.props.dispatch({ type: 'socket.message', topic, payload });
   onOpen = () => {
     this.props.dispatch({ type: 'socket.open' });
-    Notification.success({ title: 'Connected!'});
+    Notification.success({ title: 'Connected!', placement: 'bottomEnd' });
   }
 
   componentDidMount() {

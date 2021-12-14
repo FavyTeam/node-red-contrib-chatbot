@@ -8,39 +8,50 @@ import _ from 'lodash';
 import PageContainer from '../../../src/components/page-container';
 import Breadcrumbs from '../../../src/components/breadcrumbs';
 import ShowError from '../../../src/components/show-error';
+import useMCContext from '../../../src/hooks/mc-context';
 
 import ConfigurationForm from '../views/configuration-form';
 
 const GET_CHATBOT = gql`
-query {
-  chatbot {
+query($chatbotId: String!) {
+  chatbot(chatbotId: $chatbotId) {
     id,
     name,
     description,
-    guid
+    guid,
+    chatbotId
   }
 }
 `;
 
 const UPDATE_CHATBOT = gql`
-mutation($chatbot: InputChatbot!) {
-  editChatbot(chatbot: $chatbot) {
+mutation($id: Int!, $chatbot: InputChatbot!) {
+  chatbot: editChatbot(id: $id, chatbot: $chatbot) {
     id,
     name,
     description,
-    guid
+    guid,
+    chatbotId
   }
 }
 `;
 
 const ConfigureChatbot = () => {
-
-  const { loading, error: loadError, data } = useQuery(GET_CHATBOT, { fetchPolicy: 'network-only' });
+  const { state, dispatch } = useMCContext();
+  const { loading, error: loadError, data } = useQuery(GET_CHATBOT, {
+    variables: {
+      chatbotId: state.chatbotId
+    },
+    fetchPolicy: 'network-only'
+  });
   const [
     editChatbot,
     { loading: editLoading, error: editError },
   ] = useMutation(UPDATE_CHATBOT, {
-    onCompleted: () => Notification.success({ title: 'Configuration', description: 'Configuration saved successful' })
+    onCompleted: ({ chatbot }) => {
+      dispatch({ type: 'setChatbot', chatbot });
+      Notification.success({ title: 'Configuration', description: 'Configuration saved successful' });
+    }
   });
 
   const ready = !loading;
@@ -49,7 +60,7 @@ const ConfigureChatbot = () => {
 
   return (
     <PageContainer className="page-configuration">
-      <Breadcrumbs pages={['Chatbot']}/>
+      <Breadcrumbs pages={ready ? ['Chatbot', data.chatbot.name] : ['Chatbot']}/>
       {error != null && <ShowError error={error} />}
       <FlexboxGrid justify="space-between">
         <FlexboxGrid.Item colspan={17} style={{ paddingTop: '20px', paddingLeft: '20px' }}>
@@ -57,7 +68,9 @@ const ConfigureChatbot = () => {
             <ConfigurationForm
               value={_.omit(data.chatbot, ['id', 'updatedAt', 'createdAt', '__typename'])}
               disabled={disabled}
-              onSubmit={chatbot => editChatbot({ variables: { chatbot } })}
+              onSubmit={chatbot => editChatbot({
+                variables: { chatbot, id: data.chatbot.id }
+              })}
             />
           )}
         </FlexboxGrid.Item>

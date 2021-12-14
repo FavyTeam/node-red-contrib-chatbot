@@ -14,11 +14,11 @@ const fetch = require('node-fetch').default;
 module.exports = RED => {
   const cache = new InMemoryCache();
   const host = !_.isEmpty(RED.settings.uiHost) ? RED.settings.uiHost : 'localhost';
-  console.log(`Opening client: http://${host}:${RED.settings.uiPort}/graphql`);
+  //console.log(`Opening client: http://${host}:${RED.settings.uiPort}/graphql`);
   const apolloLink = createHttpLink({ uri: `http://${host}:${RED.settings.uiPort}/graphql`, fetch: fetch });
 
   const wsLink = new WebSocketLink({
-    uri: `ws://localhost:1943/`,
+    uri: 'ws://localhost:1943/',
     options: {
       reconnect: true
     },

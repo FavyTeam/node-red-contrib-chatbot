@@ -88,6 +88,9 @@ const Users = () => {
         ref={table}
         query={USERS}
         height={600}
+        labels={{
+          empty: 'No users yet'
+        }}
         initialSortField="createdAt"
         initialSortDirection="desc"
         variables={{ chatbotId: state.chatbotId }}

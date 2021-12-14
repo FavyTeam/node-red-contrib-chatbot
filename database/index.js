@@ -227,12 +227,14 @@ module.exports = mcSettings => {
   const ChatId = sequelize.define('chatid', {
     userId: { type: Sequelize.STRING, allowNull: false },
     chatId: { type: Sequelize.STRING, allowNull: false },
-    transport: { type: Sequelize.STRING, allowNull: false }
+    transport: { type: Sequelize.STRING, allowNull: false },
+    chatbotId: { type: Sequelize.TEXT }
   }, {
     indexes: [
       { name: 'chatid_userid', using: 'BTREE', fields: ['userId'] },
       { name: 'chatid_chatid', using: 'BTREE', fields: ['chatId'] },
-      { name: 'chatid_transport', using: 'BTREE', fields: ['transport'] }
+      { name: 'chatid_transport', using: 'BTREE', fields: ['transport'] },
+      { name: 'chatid_chatbotId', using: 'BTREE', fields: ['chatbotId'] }
     ]
   });
 
