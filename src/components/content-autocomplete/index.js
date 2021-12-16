@@ -5,6 +5,7 @@ import classNames from 'classnames';
 import { useQuery } from 'react-apollo';
 
 import Language from '../../components/language';
+import useMCContext from '../../hooks/mc-context';
 
 import ContentPreview from './views/content-preview';
 import ContentIcon from './views/content-icon';
@@ -37,6 +38,7 @@ const ContentAutocomplete = ({
   customFieldsSchema,
   disabled: componentDisabled = false
 }) => {
+  const { state } = useMCContext();
   const [search, setSearch] = useState(null);
   const [items, setItems] = useState(null);
   const [content, setContent] = useState(null);
@@ -52,7 +54,8 @@ const ContentAutocomplete = ({
     search: search != null ? search : undefined,
     id: search == null && !useSlug ? value || 0 : undefined,
     slug: search == null && useSlug ? value || 'invalid-slug' : undefined,
-    namespace
+    namespace,
+    chatbotId: state.chatbotId
   };
   const { client, refetch } = useQuery(SEARCH, {
     fetchPolicy: 'network-only',
@@ -144,7 +147,8 @@ const ContentAutocomplete = ({
             disabled={disabled}
             onClick={() => createContent({
               namespace,
-              slug: useSlug && value != null ? value : undefined
+              slug: useSlug && value != null ? value : undefined,
+              chatbotId: state.chatbotId
             }, {
               disabledLanguages: (items || []).map(item => item.language),
               customFieldsSchema

@@ -13,6 +13,9 @@
 
   .autocomplete {
     flex: 1 0 auto;
+    .rs-input-group {
+      width: auto;
+    }
   }
 
   .create {

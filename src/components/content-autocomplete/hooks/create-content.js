@@ -26,7 +26,6 @@ const useCreateContent = ({ onComplete = () => {} }) => {
     createContent: (contentDefault, props) => {
       setProps(props);
       setContent(contentDefault);
-
     },
     modal
   };
