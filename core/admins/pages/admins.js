@@ -88,7 +88,9 @@ const Admins = () => {
         toolbar={(
           <div>
             <Button appearance="primary" onClick={() => {
-              setAdmin({});
+              setAdmin({
+                chatbotId: state.chatbotId
+              });
             }}>Create admin</Button>
           </div>
         )}
