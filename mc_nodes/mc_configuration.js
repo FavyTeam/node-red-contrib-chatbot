@@ -1,9 +1,14 @@
 const _ = require('lodash');
-const request = require('request').defaults({ encoding: null });
-const minisearch = require('minisearch');
-const prettyjson = require('prettyjson');
 
+const DatabaseSchema = require('../database/index');
 const lcd = require('../lib/lcd/index');
+
+const compactObject = obj => {
+  return Object.entries(obj)
+    .reduce((accumulator, current) => {
+      return current[1] != null ? { ...accumulator, [current[0]]: current[1] } : accumulator;
+    }, {});
+};
 
 const saveConfiguration = (configuration, context, namespace) => {
   Object.keys(configuration)
@@ -18,49 +23,22 @@ const saveConfiguration = (configuration, context, namespace) => {
 };
 
 const tx = function(key, language, predefined) {
-  //console.log('--', this, key, predefined)
-
   const dictionary = this.get('dictionary') || {};
 
   if (typeof key !== 'string') {
+    // eslint-disable-next-line no-console
     console.error('Error in TX function: "key" is not a string');
   }
   if (typeof language !== 'string') {
+    // eslint-disable-next-line no-console
     console.error('Error in TX function: "language" is not a string');
   }
-
   if (dictionary[key] != null && dictionary[key][language] != null) {
     return dictionary[key][language];
   } else if (dictionary[key] != null && dictionary[key][predefined] != null) {
     return dictionary[key][predefined];
   }
   return key;
-};
-
-
-const RequestConfiguration = function({ url, poll = 2000, callback = () => {} }) {
-  this.timerId = setInterval(() => {
-    console.log(lcd.orange('Fetching configuration...'));
-
-    request({ url }, (error, response, body) => {
-      if (!error) {
-        let json;
-        try {
-          json = JSON.parse(body.toString())
-        } catch(e) {
-          // do nothing
-        }
-        if (json != null) {
-          callback(json);
-          clearInterval(this.timerId);
-        }
-      }
-    });
-  }, poll);
-
-  return {
-    done: () => clearInterval(this.timerId)
-  };
 };
 
 module.exports = function(RED) {
@@ -71,30 +49,45 @@ module.exports = function(RED) {
     const node = this;
     this.namespace = config.namespace;
     this.debug = config.debug;
+    this.chatbotId = config.chatbotId;
 
-    // store globally the minisearch lib
-    const global = this.context().global;
-    global.set('minisearch', minisearch);
+    const databaseSchema = DatabaseSchema();
+    const { Configuration } = databaseSchema;
 
-    // ask configuration until it comes online
-    this.requestConfiguration = new RequestConfiguration({
-      url: `http://localhost:${RED.settings.uiPort}/mc/api/configuration/${node.namespace}`,
-      callback: configuration => {
-        const payload = _.omit(configuration, 'namespace');
-        if (node.debug) {
-          console.log(lcd.green('Initial configuration received') + ' (' + lcd.grey(this.namespace) +')');
-          console.log(lcd.prettify(_.omit(payload, 'translations'), { indent: 2 }));
-        }
-        saveConfiguration(payload, this.context().global, node.namespace);
-        node.send({ payload });
-      },
-      context: this.context().global
+    Configuration.findOne({ where: compactObject({
+      namespace: node.namespace,
+       chatbotId: !_.isEmpty(node.chatbotId) ? node.chatbotId : undefined
+    })}).then(response => {
+      if (response == null || _.isEmpty(response.payload)) {
+        // eslint-disable-next-line no-console
+        console.log(`Configuration for ${node.namespace} not found`);
+        return;
+      }
+      let configuration;
+      try {
+        configuration = JSON.parse(response.payload);
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log('Invalid configuration payload')
+      }
+
+      const payload = _.omit(configuration, 'namespace');
+      if (node.debug) {
+        // eslint-disable-next-line no-console
+        console.log(lcd.green('Initial configuration received') + ' (' + lcd.grey(this.namespace) +')');
+        // eslint-disable-next-line no-console
+        console.log(lcd.prettify(_.omit(payload, 'translations'), { indent: 2 }));
+      }
+      saveConfiguration(payload, this.context().global, node.namespace);
+      node.send({ payload });
     });
 
+    // handle changes of configuration from MC
     const handler = (topic, payload) => {
       if (topic === 'mc.configuration') {
-        const { namespace, ...rest } = payload;
+        const { namespace, chatbotId, ...rest } = payload;
         if (_.isEmpty(namespace)) {
+          // eslint-disable-next-line no-console
           console.log('Error: configuration payload without namespace');
           return;
         }
@@ -102,9 +95,9 @@ module.exports = function(RED) {
         if (namespace !== node.namespace) {
           return;
         }
-        // clear interval
-        if (this.timerId != null) {
-          clearInterval(this.timerId);
+        // skip if different chatbotid
+        if (!_.isEmpty(node.chatbotId) && node.chatbotId !== chatbotId) {
+          return;
         }
         saveConfiguration(rest, this.context().global, node.namespace);
         // pass through

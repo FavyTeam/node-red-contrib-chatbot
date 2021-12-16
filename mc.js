@@ -155,7 +155,6 @@ async function bootstrap(server, app, log, redSettings) {
     mcSettings.cloudinary = null;
   }
 
-  // todo put db schema here
   const databaseSchema = DatabaseSchema(mcSettings)
   const { Configuration, graphQLServer, graphQLSchema, Category, Content, Admin,  ChatBot, Plugin, sequelize } = databaseSchema;
 

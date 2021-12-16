@@ -1,4 +1,3 @@
 module.exports = function(RED) {
-  const mc = require('../mc')(RED);
-
+  require('../mc')(RED);
 };

@@ -77,7 +77,11 @@ const useConfiguration = ({
           }
         }
       });
-      sendMessage('mc.configuration', { namespace, ...configuration });
+      sendMessage('mc.configuration', {
+        namespace,
+        chatbotId: state.chatbotId,
+        ...configuration
+      });
     }
   };
 };

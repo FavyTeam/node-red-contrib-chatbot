@@ -6,6 +6,9 @@
       namespace: {
         value: ''
       },
+      chatbotId: {
+        value: ''
+      },
       debug: {
         value: false
       }
@@ -24,6 +27,14 @@
   <div class="form-row">
     <label for="node-input-namespace"><i class="icon-tag"></i> Namespace</label>
     <input type="text" id="node-input-namespace" placeholder="Namespace">
+  </div>
+  <div class="form-row">
+    <label for="node-input-namespace">chatbotId</label>
+    <input type="text" id="node-input-chatbotId" placeholder="chatbotId">
+    <span class="redbot-form-hint">
+      Use the same chatbotId specified in the Receiver node configuration, or just leave black if there are not multiple
+      chatbots.
+    </span>
   </div>
   <div class="form-row">
     <label for="node-input-debug">Debug</label>
