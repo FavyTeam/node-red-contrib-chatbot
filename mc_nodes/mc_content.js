@@ -8,15 +8,29 @@ const LIMIT = 100;
 const {
   isValidMessage,
   extractValue,
-  when
+  when,
+  getChatbotId
 } = require('../lib/helpers/utils');
 const {
   variable: isVariable
 } = require('../lib/helpers/validators');
 
 const CONTENT = gql`
-query($id: Int,$slug: String, $ids: [Int], $slugs: [String]) {
-  contents(id: $id, slug: $slug, ids: $ids, slugs: $slugs) {
+query(
+  $id: Int,
+  $slug: String,
+  $ids: [Int],
+  $slugs: [String],
+  $chatbotId: String
+) {
+  contents(
+    id: $id,
+    slug: $slug,
+    ids: $ids,
+    slugs: $slugs,
+    chatbotId:
+    $chatbotId
+  ) {
     id,
     title,
     slug,
@@ -67,6 +81,7 @@ module.exports = function(RED) {
       if (!isValidMessage(msg, node)) {
         return;
       }
+      const chatbotId = getChatbotId(msg);
       const chat = msg.chat();
       const template = MessageTemplate(msg, node);
 
@@ -116,7 +131,8 @@ module.exports = function(RED) {
         done('Invalid or empty slug/id, unable to retrieve content with this query: ' + (query != null ? query.toString() : 'null'));
         return;
       }
-
+      variables.chatbotId = chatbotId;
+      console.log('variables---', variables)
       // get user's language from context
       const contextLanguage = await when(chat.get('language'));
 

@@ -14,7 +14,6 @@ const Op = Sequelize.Op;
 const pubsub = new PubSub();
 
 const { when, hash } = require('../lib/utils');
-//const isCircularPaths = require('../lib/get-circular-paths');
 
 const deleteFile = filename => new Promise((resolve, reject) => {
   fs.unlink(filename, err => {
@@ -50,8 +49,7 @@ const {
   GraphQLList,
   GraphQLBoolean,
   GraphQLInputObjectType,
-  GraphQLScalarType,
-  GraphQLID
+  GraphQLScalarType
 } = require('graphql');
 const { compact } = require('lodash');
 
@@ -1437,45 +1435,6 @@ module.exports = ({
             return true;
           }
         },
-
-        /*createEvent: {
-          type: eventType,
-          args: {
-            event: { type: new GraphQLNonNull(newEventType) }
-          },
-          resolve: async function(root, { event }) {
-
-            // get all connections for this flow
-            const nodes = await Event.findAll({ where: { flow: event.flow }})
-
-            let sources = [...event.sources];
-
-            // while the last event of history is circular, chop the array remove the last event,
-            // then try again
-            while (!_.isEmpty(sources) && isCircularPaths(event.name, _.last(sources), nodes, false)) {
-              console.log('* IS circular ', _.last(sources),  ' -> ', event.name)
-              sources = _.initial(sources);
-            }
-
-            let source = !_.isEmpty(sources) ? _.last(sources) : 'home';
-
-            // there's still something
-            //if (!_.isEmpty(sources)) {
-              console.log('* NOT circular ', source,  ' -> ', event.name)
-              // check if exists
-              const existingEvent = nodes.find(node => node.name === event.name && node.source === source);
-              // check if the event already exists or create a new one
-              if (existingEvent != null) {
-                await Event.update({ count: existingEvent.count + 1 }, { where: { flow: event.flow, name: event.name, source }})
-                existingEvent.count += 1;
-                return { ...existingEvent.toJSON(), sources: [...sources, event.name] };
-              } else {
-                let newEvent = await Event.create({ name: event.name, flow: event.flow, source, count: 1 });
-                return { ...newEvent.toJSON(), sources: [...sources, event.name] };
-              }
-            //}
-          }
-        },*/
 
         createConfiguration: {
           type: configurationType,
