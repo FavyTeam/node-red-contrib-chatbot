@@ -4,15 +4,11 @@ const gql = require('graphql-tag');
 const Client = require('../database/client');
 const lcd = require('../lib/lcd/index');
 
-const {
-  getTransport,
-  getChatId,
-  getUserId,
-} = require('../lib/helpers/utils');
+const { getChatbotId, getUserId } = require('../lib/helpers/utils');
 
 const GET_USER = gql`
-query($userId: String) {
-  user(userId: $userId) {
+query($userId: String, $chatbotId: String) {
+  user(userId: $userId, chatbotId: $chatbotId) {
     id,
     userId,
     payload
@@ -50,12 +46,13 @@ module.exports = function(RED) {
       send = send || function() { node.send.apply(node, arguments) };
       done = done || function(error) { node.error.call(node, error, msg) };
 
+      const chatbotId = getChatbotId(msg);
       const userId = getUserId(msg);
 
       try {
         const response = await client.query({
           query: GET_USER,
-          variables: { userId },
+          variables: { userId, chatbotId },
           fetchPolicy: 'network-only'
         });
 
@@ -78,7 +75,6 @@ module.exports = function(RED) {
         send(msg);
         done();
       } catch(error) {
-        console.log('errr', error )
         // format error
         // TODO: generalize query error
         if (error != null && error.networkError != null && error.networkError.result != null && error.networkError.result.errors != null) {

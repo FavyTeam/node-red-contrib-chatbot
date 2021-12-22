@@ -120,10 +120,10 @@ module.exports = function(RED) {
         variables = { ids };
         usingIds = true;
       } else if (!isNaN(parseInt(query, 10))) {
-        variables = { id: parseInt(query, 10), limit: LIMIT };
+        variables = { id: parseInt(query, 10) };
         usingId = true;
       } else if (_.isNumber(query)) {
-        variables = { id, limit: LIMIT };
+        variables = { id: query };
         usingId = true;
       } else if (_.isString(query) && !_.isEmpty(query)) {
         variables = { slug: query, limit: LIMIT };
@@ -132,14 +132,13 @@ module.exports = function(RED) {
         return;
       }
       variables.chatbotId = chatbotId;
-      console.log('variables---', variables)
       // get user's language from context
       const contextLanguage = await when(chat.get('language'));
 
       try {
         const response = await client.query({ query: CONTENT, variables, fetchPolicy: 'network-only' });
         const { contents } = response.data;
-        console.log('contents', contents)
+
         let content;
         if (usingIds) {
           // sort the same order of ids

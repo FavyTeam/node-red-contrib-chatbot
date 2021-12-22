@@ -99,7 +99,6 @@
       "mc-configuration": "mc_nodes/mc_configuration.js",
       "mc-graphql": "mc_nodes/mc_graphql.js",
       "mc-content": "mc_nodes/mc_content.js",
-      "mc-event": "mc_nodes/mc_event.js",
       "mc-simulator-receiver": "mc_nodes/mc_simulator_receiver.js",
       "mc-simulator-sender": "mc_nodes/mc_simulator_sender.js",
       "mc-user-payload": "mc_nodes/mc_user_payload.js"
