@@ -6,7 +6,9 @@ const WebSocket = require('ws');
 const fs = require('fs');
 const moment = require('moment');
 const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
 const express = require('express');
+const session = require('express-session')
 const http = require('http');
 const { BasicStrategy } = require('passport-http');
 const _ = require('lodash');
@@ -176,8 +178,13 @@ Some **formatting** is _allowed_!`
     });
   }
 
+
+
+
+
+
   //passport authentication
-  passport.use(new BasicStrategy(async function (username, password, done) {
+  /*passport.use(new BasicStrategy(async function (username, password, done) {
     try {
       let user = await Admin.findOne({ where: { username } });
       if (user == null) {
@@ -204,6 +211,81 @@ Some **formatting** is _allowed_!`
     }
   }));
   app.use(passport.initialize());
+  */
+
+
+  passport.serializeUser(function(user, done) { //In serialize user you decide what to store in the session. Here I'm storing the user id only.
+    done(null, user.id);
+  });
+
+  passport.deserializeUser(function(id, done) { //Here you retrieve all the info of the user from the session storage using the user id stored in the session earlier using serialize user.
+    /*db.findById(id, function(err, user) {
+      done(err, user);
+      });*/
+    Admin.findOne({ where: { id: parseInt(id, 10) } })
+      .then(user => {
+        done(null, user)
+      })
+      .catch(err => done(err));
+  });
+
+  passport.use(new LocalStrategy(async function(username, password, done) {
+    try {
+      console.log('cazzo sale da qua?? ', username, password)
+      let user = await Admin.findOne({ where: { username } });
+      if (user == null) {
+        done(null, false);
+      } else {
+        const hashedPassword = hash(password, { salt: mcSettings.salt });
+        if (_.isEmpty(user.password) || user.password === hashedPassword) {
+          done(null, {
+            id: user.id,
+            username: user.username,
+            firstName: user.first_name,
+            lastName: user.last_name,
+            avatar: user.avatar,
+            email: user.email,
+            isEmptyPassword: _.isEmpty(user.password),
+            permissions: !_.isEmpty(user.permissions) ? user.permissions.split(',') : []
+          });
+        } else {
+          done(null, false);
+        }
+      }
+    } catch (e) {
+      done(e);
+    }
+    /*db.findOne({'username':username},function(err,student){
+          if(err)return done(err,{message:message});//wrong roll_number or password;
+          var pass_retrieved = student.pass_word;
+          bcrypt.compare(password, pass_retrieved, function(err3, correct) {
+            if(err3){
+              message = [{"msg": "Incorrect Password!"}];
+              return done(null,false,{message:message});  // wrong password
+            }
+            if(correct){
+                return done(null,student);
+            }
+          });
+      });*/
+  }));
+
+  app.use(session({ secret: 'super secret' })); //to make passport remember the user on other pages too.(Read about session store. I used express-sessions.)
+  app.use(passport.initialize());
+  app.use(passport.session());
+
+  app.post(
+    '/mc/login',
+    passport.authenticate('local', {
+      successRedirect:'/mc',
+      failureRedirect: '/mc/login'
+    })
+    /*function(req, res, next) {
+      console.log('done!');
+    }*/
+  );
+
+
 
   // mount graphql endpoints to Node-RED app
   graphQLServer.applyMiddleware({ app });
@@ -239,6 +321,7 @@ Some **formatting** is _allowed_!`
     });
   });
 
+  // TODO is it still used
   // serve a configuration given the namespace
   app.get(`${mcSettings.root}/api/configuration/:namespace`, (req, res) => {
     Configuration.findOne({ where: { namespace: req.params.namespace }})
@@ -272,11 +355,37 @@ Some **formatting** is _allowed_!`
   app.use(`${mcSettings.root}/plugins`, serveStatic(mcSettings.pluginsPath, {
     'index': false
   }));
+
+
+  app.get(
+    '/mc/login',
+    async (req, res) => {
+      fs.readFile(`${__dirname}/src/login.html`, (err, data) => {
+        const template = data.toString();
+        const assets = mcSettings.environment === 'development' || mcSettings.environment === 'plugin' ?
+        'http://localhost:8080/login.js' : `${mcSettings.root}/login.js`;
+        const bootstrap = { };
+        const json = `<script>
+        window.process = { env: { NODE_ENV: 'development' }};
+        var bootstrap = ${JSON.stringify(bootstrap)};var mc_environment='${mcSettings.environment}';</script>`;
+        res.send(template
+          .replace('{{assets}}', assets)
+          .replace('{{data}}', json)
+        );
+     });
+    }
+  );
+
   // serve mission control page and assets
   app.use(
     '^' + mcSettings.root,
-    passport.authenticate('basic', { session: false }),
     async (req, res) => {
+      // redirect to login page
+      if (!req.isAuthenticated()) {
+        res.redirect(`${mcSettings.root}/login`);
+        return;
+      }
+
       const chatbot = await ChatBot.findOne();
       const plugins = await chatbot.getPlugins({ limit: 9999 });
       // inject user info into template

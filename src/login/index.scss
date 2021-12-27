@@ -1,0 +1,43 @@
+body {
+  background-color: #F3F6FE;
+}
+
+.container-login2 {
+  margin: 0 auto;
+  margin-top: 300px;
+  background-color: #ffffff;
+  width: 450px;
+}
+
+.login-panel {
+  margin-top: 100px;
+
+  h3 {
+    color: #336699;
+  }
+
+  .rs-input-group-addon {
+    height: 42px !important;
+    color: #336699;
+  }
+
+  .logo {
+    text-align: center;
+    margin-bottom: 50px;
+  }
+
+  .rs-panel {
+    background-color: #ffffff;
+    box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+  }
+
+  .rs-form-group {
+    .rs-input-group.rs-input-group-inside {
+      width: auto;
+    }
+  }
+
+  .rs-form-group.last {
+    margin-top: 40px;
+  }
+}
