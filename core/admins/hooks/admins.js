@@ -12,7 +12,7 @@ mutation($id: Int!) {
 }`;
 
 const EDIT_ADMIN = gql`
-mutation($id: Int!, $admin: NewAdmin!) {
+mutation($id: Int!, $admin: InputAdmin!) {
   editAdmin(id:$id, admin: $admin) {
     id,
     username,
@@ -27,7 +27,7 @@ mutation($id: Int!, $admin: NewAdmin!) {
 }`;
 
 const CREATE_ADMIN = gql`
-mutation($admin: NewAdmin!) {
+mutation($admin: InputAdmin!) {
   createAdmin(admin: $admin) {
     id,
     username,

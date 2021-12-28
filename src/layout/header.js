@@ -5,6 +5,7 @@ import { Tooltip, Whisper, Header, Navbar, Dropdown, Nav, Icon, IconButton, Avat
 import { useCodePlug } from 'code-plug';
 import { Link, useHistory } from 'react-router-dom';
 import _ from 'lodash';
+import useFetch from 'use-http';
 
 import AppContext from '../common/app-context';
 import useCurrentUser from '../hooks/current-user';
@@ -90,6 +91,7 @@ const ChatbotsSelector = ({ chatbots, value, onChange }) => {
 
 const AppHeader = () => {
   const [, setChatbotId] = useLocalStorage('chatbotId', undefined);
+  const { post } = useFetch('/mc/logout');
   const { user } = useCurrentUser();
   const { state, dispatch } = useContext(AppContext);
   const history = useHistory();
@@ -165,7 +167,12 @@ const AppHeader = () => {
               <Dropdown.Item><b>{extendedName(user)}</b></Dropdown.Item>
               <Dropdown.Item onSelect={() => window.location = '/'}>Node-RED</Dropdown.Item>
               <Dropdown.Item divider />
-              <Dropdown.Item>Logout</Dropdown.Item>
+              <Dropdown.Item
+                onSelect={async () => {
+                  await post();
+                  window.location.reload();
+                }}
+              >Logout</Dropdown.Item>
             </Dropdown>
           </Nav>
         </Navbar.Body>

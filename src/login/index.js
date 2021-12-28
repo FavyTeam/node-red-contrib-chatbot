@@ -35,7 +35,6 @@ const LoginPanel = () => {
   const loginButton = async () => {
     console.log('--->formValue', formValue)
     await post(formValue)
-    console.log('response', response)
     if (response.redirected) {
       if (response.url.includes('/login')) {
         alert('wrong login')
@@ -43,9 +42,6 @@ const LoginPanel = () => {
         window.location = response.url;
       }
     }
-
-
-
   }
 
 
@@ -71,7 +67,18 @@ const LoginPanel = () => {
                       <InputGroup.Addon>
                         <Icon icon="unlock-alt" size="lg" />
                       </InputGroup.Addon>
-                      <FormControl name="password" type="password" autoComplete="off" size="lg"/>
+                      <FormControl
+                        name="password"
+                        type="password"
+                        autoComplete="off"
+                        size="lg"
+                        onKeyUp={(e) => {
+                          // auto login
+                          if (e.keyCode === 13) {
+                            loginButton();
+                          }
+                        }}
+                      />
                     </InputGroup>
                   </FormGroup>
                   <FormGroup className="last">

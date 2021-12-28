@@ -548,15 +548,15 @@ module.exports = ({
         type: JSONType,
         description: '',
       },
-      chatbotId: {
+      chatbotIds: {
         type: GraphQLString,
         description: '',
       }
     })
   });
 
-  const newAdminType = new GraphQLInputObjectType({
-    name: 'NewAdmin',
+  const InputAdminType = new GraphQLInputObjectType({
+    name: 'InputAdmin',
     description: 'tbd',
     fields: () => ({
       email: {
@@ -594,7 +594,7 @@ module.exports = ({
         type: JSONType,
         description: '',
       },
-      chatbotId: {
+      chatbotIds: {
         type: GraphQLString,
         description: '',
       }
@@ -1637,7 +1637,7 @@ module.exports = ({
           type: adminType,
           args: {
             id: { type: GraphQLInt},
-            admin: { type: new GraphQLNonNull(newAdminType) }
+            admin: { type: new GraphQLNonNull(InputAdminType) }
           },
           async resolve(root, { id, admin }) {
             if (!_.isEmpty(admin.password)) {
@@ -1651,7 +1651,7 @@ module.exports = ({
         createAdmin: {
           type: adminType,
           args: {
-            admin: { type: new GraphQLNonNull(newAdminType)}
+            admin: { type: new GraphQLNonNull(InputAdminType)}
           },
           resolve: function(root, { admin }) {
             if (!_.isEmpty(admin.password)) {
@@ -2017,13 +2017,11 @@ module.exports = ({
             id: { type: GraphQLInt },
             order: { type: GraphQLString },
             username: { type: GraphQLString },
-            search: { type: GraphQLString },
-            chatbotId: { type: GraphQLString }
+            search: { type: GraphQLString }
           },
-          resolve(root, { order, offset = 0, limit = 10, username, id, search, chatbotId }) {
+          resolve(root, { order, offset = 0, limit = 10, username, id, search }) {
             const whereParams = compactObject({
               id,
-              chatbotId,
               username: username != null ? { [Op.like]: `%${username}%` } : null,
             });
             if (search != null) {

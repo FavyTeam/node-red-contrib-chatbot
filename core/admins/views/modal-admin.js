@@ -3,8 +3,10 @@ import { Modal, Button, Form, FormGroup, ControlLabel, FormControl, FlexboxGrid,
 
 import JSONEditor from '../../../src/components/json-editor';
 import Permissions from '../../../src/components/permissions';
+import SelectChatbots from '../../../src/components/select-chatbots';
 import PasswordInput from '../../../src/components/password-input';
 import useCanCloseModal from '../../../src/hooks/modal-can-close';
+
 
 import adminModel from '../model';
 
@@ -109,6 +111,14 @@ const ModalAdmin = ({ admin, onCancel = () => {}, onSubmit = () => {}, disabled 
                 disabled={disabled}
                 name="permissions"
                 accepter={Permissions}
+              />
+            </FormGroup>
+            <FormGroup>
+              <ControlLabel>Chatbots</ControlLabel>
+              <FormControl
+                disabled={disabled}
+                name="chatbotIds"
+                accepter={SelectChatbots}
               />
             </FormGroup>
           </Form>

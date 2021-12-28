@@ -21,20 +21,18 @@ query (
   $limit: Int,
   $offset: Int,
   $order: String,
-  $username: String,
-  $chatbotId: String
+  $username: String
 ) {
   counters {
     rows: admins {
-     count(username: $username, chatbotId: $chatbotId)
+     count(username: $username)
     }
   }
   rows: admins(
     limit: $limit,
     offset: $offset,
     order: $order,
-    username: $username,
-    chatbotId: $chatbotId
+    username: $username
   ) {
     id,
     username,
@@ -43,7 +41,8 @@ query (
     payload,
     createdAt,
     email,
-    permissions
+    permissions,
+    chatbotIds
   }
 }
 `;
@@ -82,7 +81,6 @@ const Admins = () => {
         labels={{
           empty: 'No admins'
         }}
-        variables={{ chatbotId: state.chatbotId }}
         initialSortField="createdAt"
         initialSortDirection="desc"
         toolbar={(

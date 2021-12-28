@@ -117,12 +117,12 @@ module.exports = mcSettings => {
     email: Sequelize.STRING,
     payload: Sequelize.TEXT,
     permissions: Sequelize.STRING,
-    chatbotId: Sequelize.TEXT
+    chatbotIds: Sequelize.TEXT
   }, {
     indexes: [
       { name: 'admin_username', using: 'BTREE', fields: ['username'] },
       { name: 'admin_password', using: 'BTREE', fields: ['password'] },
-      { name: 'admin_chatbotId', using: 'BTREE', fields: ['chatbotId'] }
+      { name: 'admin_chatbotIds', using: 'BTREE', fields: ['chatbotIds'] }
     ],
     /*getterMethods: {
       payload: function() {
