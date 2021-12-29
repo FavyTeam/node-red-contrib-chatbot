@@ -227,9 +227,6 @@ Some **formatting** is _allowed_!`
       successRedirect:'/mc',
       failureRedirect: '/mc/login'
     })
-    /*function(req, res, next) {
-      console.log('done!');
-    }*/
   );
 
   // mount graphql endpoints to Node-RED app
@@ -266,9 +263,8 @@ Some **formatting** is _allowed_!`
     });
   });
 
-  // TODO is it still used
   // serve a configuration given the namespace
-  app.get(`${mcSettings.root}/api/configuration/:namespace`, (req, res) => {
+  /*app.get(`${mcSettings.root}/api/configuration/:namespace`, (req, res) => {
     Configuration.findOne({ where: { namespace: req.params.namespace }})
       .then(found => {
         if (found == null) {
@@ -287,10 +283,12 @@ Some **formatting** is _allowed_!`
           res.status(400).send('Invalid JSON');
         }
       });
-  });
+  });*/
 
   // assets
-  app.use(`${mcSettings.root}/main.js`, serveStatic(path.join(__dirname, 'dist/main.js')));
+  //app.use(`${mcSettings.root}/main.js`, serveStatic(path.join(__dirname, 'dist/main.js')));
+
+
   // serve plugins chunk, only used in dev mode, it changes position everytime, that's the reason of the wildcard
   // not used in prod
   app.get(/plugins_js\.main\.js$/, async (req, res) => {
@@ -308,7 +306,7 @@ Some **formatting** is _allowed_!`
       fs.readFile(`${__dirname}/src/login.html`, (err, data) => {
         const template = data.toString();
         const assets = mcSettings.environment === 'development' || mcSettings.environment === 'plugin' ?
-        'http://localhost:8080/login.js' : `${mcSettings.root}/login.js`;
+        'http://localhost:8080/login.js' : `${mcSettings.root}/assets/login.js`;
         const bootstrap = { };
         const json = `<script>
         window.process = { env: { NODE_ENV: 'development' }};
@@ -319,6 +317,10 @@ Some **formatting** is _allowed_!`
         );
      });
     }
+  );
+  app.use(
+    `${mcSettings.root}/assets`,
+    serveStatic(path.join(__dirname, 'webpack/dist'))
   );
 
   app.post('/mc/logout', function(req, res){
@@ -332,6 +334,7 @@ Some **formatting** is _allowed_!`
     async (req, res) => {
       // redirect to login page
       if (!req.isAuthenticated()) {
+        console.log('no ti sbatto fuori', req.url, )
         res.redirect(`${mcSettings.root}/login`);
         return;
       }
@@ -351,7 +354,7 @@ Some **formatting** is _allowed_!`
         };
 
         const assets = mcSettings.environment === 'development' || mcSettings.environment === 'plugin' ?
-          'http://localhost:8080/main.js' : `${mcSettings.root}/main.js`;
+          'http://localhost:8080/main.js' : `${mcSettings.root}/assets/main.js`;
         // link external plugin scripts only in plugin mode
         let pluginsScript = [];
         if (mcSettings.environment === 'plugin' || mcSettings.environment === 'production') {
