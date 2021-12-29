@@ -334,7 +334,6 @@ Some **formatting** is _allowed_!`
     async (req, res) => {
       // redirect to login page
       if (!req.isAuthenticated()) {
-        console.log('no ti sbatto fuori', req.url, )
         res.redirect(`${mcSettings.root}/login`);
         return;
       }
