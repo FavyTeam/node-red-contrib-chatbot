@@ -135,10 +135,11 @@ module.exports = ({
 
   let _cachedChatbotIds;
   const createChatbotIdIfNotExist = async (chatbotId) => {
+    // load cache
     if (_cachedChatbotIds == null) {
       _cachedChatbotIds = await ChatBot.findAll().map(({ chatbotId }) => chatbotId);
     }
-    if (!_cachedChatbotIds.includes(chatbotId)) {
+    if (!_.isEmpty(chatbotId) && !_cachedChatbotIds.includes(chatbotId)) {
       await ChatBot.create({ chatbotId, name: chatbotId });
       _cachedChatbotIds = [..._cachedChatbotIds, chatbotId];
     }

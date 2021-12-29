@@ -7,22 +7,16 @@ import {
   FlexboxGrid,
   Form,
   Button,
-  Footer,
   Panel,
-  Control,
   ButtonToolbar,
   FormGroup,
   FormControl,
-  ControlLabel,
   HelpBlock,
   InputGroup,
   Icon
 } from 'rsuite';
 
 import { LogoFull } from '../components/logo';
-
-
-
 
 
 const LoginPanel = () => {
@@ -32,8 +26,8 @@ const LoginPanel = () => {
   })
   const { post, loading, response} = useFetch('/mc/login');
 
+  // it's pointless to useCallback
   const loginButton = async () => {
-    console.log('--->formValue', formValue)
     await post(formValue)
     if (response.redirected) {
       if (response.url.includes('/login')) {
@@ -43,7 +37,6 @@ const LoginPanel = () => {
       }
     }
   }
-
 
   return (
     <div className='container-login'>
@@ -92,7 +85,6 @@ const LoginPanel = () => {
             </FlexboxGrid.Item>
           </FlexboxGrid>
         </Content>
-        <Footer>Footer</Footer>
       </Container>
     </div>
   );

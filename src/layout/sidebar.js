@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { Link } from 'react-router-dom';
 import { Dropdown, Nav, Icon, Sidebar, Sidenav } from 'rsuite';
 
-import Logo from '../components/logo';
+import { LogoFull } from '../components/logo';
 import { useCodePlug } from 'code-plug';
 import useCurrentUser from '../hooks/current-user';
 import useSettings from '../hooks/settings';
@@ -60,7 +60,7 @@ const AppSidebar = () => {
       >
         <Sidenav.Header>
           <div className="mc-sidebar-header">
-            <Logo />
+            <LogoFull width={200} style={{ marginTop: '-20px' }}/>
           </div>
         </Sidenav.Header>
         <Sidenav.Body className="mc-sidebar-body">

@@ -43,8 +43,8 @@ export const LogoSimple = ({ width = 70, height = 50 }) => (
   </svg>
 );
 
-export const LogoFull = ({ width = 366, height = 86 }) => (
-  <svg width={`${width}px`} height={`${height}px`} viewBox="0 0 366 86" version="1.1">
+export const LogoFull = ({ width = 366, height = 86, style }) => (
+  <svg width={`${width}px`} height={`${height}px`} style={style} viewBox="0 0 366 86" version="1.1">
     <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
         <g id="FullLogo">
             <rect id="Rectangle" fill="#A01818" x="0" y="3" width="334" height="79" rx="8"></rect>

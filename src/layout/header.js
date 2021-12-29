@@ -11,6 +11,8 @@ import AppContext from '../common/app-context';
 import useCurrentUser from '../hooks/current-user';
 import useLocalStorage from '../hooks/use-local-storage';
 
+import ChatbotsSelector from './chatbots-selector';
+
 const initials = user => {
   if (user.firstName != null && user.firstName.length !== 0 && user.lastName != null && user.lastName.length !== 0) {
     return user.firstName.substr(0, 1) + user.lastName.substr(0, 1);
@@ -46,47 +48,6 @@ const sortBy = (a, b) => {
     return 1;
   }
   return 0;
-};
-
-
-const renderButton = (props, ref) => {
-  console.log('prop button', props)
-  return (
-    <div style={{
-
-      paddingRight: '20px'
-
-    }}>
-      <button ref={ref} style={{
-        fontSize: '14px',
-        backgroundColor: '#ffffff',
-        height: '56px',
-        color: '#000000',
-        paddingRight: '20px'
-
-      }}>
-        {props}
-      </button>
-    </div>
-  );
-};
-
-const ChatbotsSelector = ({ chatbots, value, onChange }) => {
-  const chatbot = chatbots.find(({ chatbotId }) => chatbotId === value);
-
-  return (
-    <SelectPicker
-      style={{ marginTop: '11px', marginRight: '15px' }}
-      value={value}
-      data={chatbots.map(({ chatbotId, name }) => ({ value: chatbotId, label: name }))}
-      appearance="subtle"
-      placeholder="Select chatbot"
-      cleanable={false}
-      searchable={false}
-      menuStyle={{ zIndex: 100000000 }}
-      onChange={onChange}
-    />
-  )
 };
 
 const AppHeader = () => {
