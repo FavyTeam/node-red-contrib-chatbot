@@ -4,13 +4,11 @@ const path = require('path');
 const events = require('events');
 const WebSocket = require('ws');
 const fs = require('fs');
-const moment = require('moment');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const express = require('express');
 const session = require('express-session')
 const http = require('http');
-const { BasicStrategy } = require('passport-http');
 const _ = require('lodash');
 const fileupload = require('express-fileupload');
 const cloudinary = require('cloudinary').v2;
@@ -22,9 +20,10 @@ const DatabaseSchema = require('./database/index');
 const Settings = require('./src/settings');
 const validators = require('./lib/helpers/validators');
 const uploadFromBuffer = require('./lib/helpers/upload-from-buffer');
+const chatbotIdGenerator = require('./lib/utils/chatbot-id-generator');
 
-const { execute, subscribe } = require('graphql');
-const { SubscriptionServer } = require('subscriptions-transport-ws');
+//const { execute, subscribe } = require('graphql');
+//const { SubscriptionServer } = require('subscriptions-transport-ws');
 
 let initialized = false;
 const Events = new events.EventEmitter();
@@ -217,7 +216,7 @@ Some **formatting** is _allowed_!`
     }
   }));
 
-  app.use(session({ secret: 'super secret' })); //to make passport remember the user on other pages too.(Read about session store. I used express-sessions.)
+  app.use(session({ secret: mcSettings.salt }));
   app.use(passport.initialize());
   app.use(passport.session());
 
@@ -298,7 +297,7 @@ Some **formatting** is _allowed_!`
   app.use(`${mcSettings.root}/plugins`, serveStatic(mcSettings.pluginsPath, {
     'index': false
   }));
-
+  app.get('/mc/chatbotIdGenerator', (_req, res) => res.send(chatbotIdGenerator()));
 
   app.get(
     '/mc/login',

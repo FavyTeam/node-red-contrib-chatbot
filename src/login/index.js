@@ -77,7 +77,6 @@ const LoginPanel = () => {
                   <FormGroup className="last">
                     <ButtonToolbar>
                       <Button appearance="primary" onClick={loginButton}>Login</Button>
-                      <Button appearance="link">Forgot password?</Button>
                     </ButtonToolbar>
                   </FormGroup>
                 </Form>
