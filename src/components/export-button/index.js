@@ -5,15 +5,17 @@ const { Circle } = Progress;
 
 import workerSourceCode from '!!raw-loader!../../csv-exporter.worker.js';
 import launchWebWorker from '../../helpers/launch-worker';
-import useSettings from '../../hooks/settings';
+import useMCContext from '../../hooks/mc-context';
 
 const ExportButton = ({ disabled, namespace, table }) => {
   const [currentWorker, setCurrentWorker] = useState(null);
-  const { urlGraphQL } = useSettings();
+  const { state } = useMCContext();
   const [status, setStatus] = useState(null);
   const [url, setUrl] = useState(null);
 
   const token = localStorage.getItem('token');
+
+  const urlGraphQL = `${window.location.protocol}//${window.location.hostname}:${window.location.port}/graphql`
 
   return (
     <Fragment>
@@ -68,10 +70,10 @@ const ExportButton = ({ disabled, namespace, table }) => {
           worker.addEventListener('message', event => setStatus(event.data));
           setCurrentWorker(worker);
           let url;
-          if (table === 'contacts') {
-            url = await ns.exportContactsCSV({ token, urlGraphQL });
+          if (table === 'users') {
+            url = await ns.exportUsersCSV({ token, urlGraphQL, chatbotId: state.chatbotId });
           } else if (table === 'contents') {
-            url = await ns.exportContentCSV({ namespace, token, urlGraphQL });
+            url = await ns.exportContentCSV({ namespace, token, urlGraphQL, chatbotId: state.chatbotId });
           } else {
             throw 'Table not specified in Export Button';
           }

@@ -4,7 +4,7 @@ importScripts('https://unpkg.com/workway/worker.js');
 
 const PAGE_SIZE = 10;
 const CONTENTS_FIELDS = ['id', 'title', 'slug', 'body', 'payload'];
-const CONTACTS_FIELDS = ['id', 'contactId', 'email', 'phone', 'first_name', 'last_name', 'language', 'payload'];
+const CONTACTS_FIELDS = ['id', 'userId', 'email', 'first_name', 'last_name', 'language', 'payload'];
 
 const fetchQL = ({ query, token, url }) => {
   return new Promise((resolve, reject) => {
@@ -67,11 +67,11 @@ const buildCSVRow = (row, fields, columns) => {
   };
 };
 
-const fetchContents = async ({ namespace, offset, token, urlGraphQL }) => {
+const fetchContents = async ({ namespace, offset, token, urlGraphQL, chatbotId }) => {
   const res = await fetchQL({
     query: `
       query{
-        contents(namespace: "${namespace}", limit: ${PAGE_SIZE}, offset: ${offset}) {
+        contents(namespace: "${namespace}", limit: ${PAGE_SIZE}, offset: ${offset}, chatbotId:"${chatbotId}") {
           id,
           title,
           slug,
@@ -92,15 +92,14 @@ const fetchContents = async ({ namespace, offset, token, urlGraphQL }) => {
   return res;
 };
 
-const fetchContacts = async ({ offset, token, urlGraphQL }) => {
+const fetchUsers = async ({ offset, token, urlGraphQL, chatbotId }) => {
   const res = await fetchQL({
     query: `
       query{
-        contacts(limit: ${PAGE_SIZE}, offset: ${offset}){
+        users(limit: ${PAGE_SIZE}, offset: ${offset}, chatbotId:"${chatbotId}"){
           id,
-          contactId,
+          userId,
           email,
-          phone,
           first_name,
           last_name,
           language,
@@ -117,14 +116,14 @@ const fetchContacts = async ({ offset, token, urlGraphQL }) => {
 // eslint-disable-next-line
 workway({
 
-  exportContentCSV: async ({ namespace, token, urlGraphQL }) => {
+  exportContentCSV: async ({ namespace, token, urlGraphQL, chatbotId }) => {
     postMessage({ current: 0, pages: 0, total: 0 });
     // get number of records
     const counters = await fetchQL({
       query: `query{
         counters{
           contents{
-            count(namespace: "${namespace}")
+            count(namespace: "${namespace}", chatbotId: "${chatbotId}")
           }
         }
       }`,
@@ -139,7 +138,7 @@ workway({
     const lines = [];
     let customFields = [];
     for(let currentPage = 0; currentPage <= pages; currentPage++) {
-      const data = await fetchContents({ namespace, offset: currentPage*PAGE_SIZE, token, urlGraphQL });
+      const data = await fetchContents({ namespace, offset: currentPage*PAGE_SIZE, token, urlGraphQL, chatbotId });
       data.contents.forEach(content => {
         const { row, customFields: newFields } = buildCSVRow(content, customFields, CONTENTS_FIELDS);
         lines.push(row);
@@ -163,28 +162,28 @@ workway({
     return url;
   },
 
-  exportContactsCSV: async ({ namespace, token, urlGraphQL }) => {
+  exportUsersCSV: async ({ token, urlGraphQL, chatbotId }) => {
     // get number of records
     const counters = await fetchQL({
       query: `query {
         counters{
-          contacts{
-            count
+          users{
+            count(chatbotId: "${chatbotId}")
           }
         }
       }`,
       token,
       url: urlGraphQL
     });
-    const total = counters.counters.contacts.count;
+    const total = counters.counters.users.count;
     const pages = Math.ceil(total / PAGE_SIZE);
 
     postMessage({ current: 0, pages, total });
 
     const lines = [];
     for(let currentPage = 0; currentPage <= pages; currentPage++) {
-      const data = await fetchContacts({ namespace, offset: currentPage*PAGE_SIZE, token, urlGraphQL });
-      data.contacts.forEach(contact => {
+      const data = await fetchUsers({ offset: currentPage*PAGE_SIZE, token, urlGraphQL, chatbotId });
+      data.users.forEach(contact => {
         const { row } = buildCSVRow(contact, [], CONTACTS_FIELDS);
         lines.push(row);
       });

@@ -1887,7 +1887,6 @@ module.exports = ({
           },
           resolve: async function(root, { message }) {
             const { user, ...newMessage } = message;
-            console.log(`creating message: ${message.chatId} ${message.chatbotId}`)
             // check if chatbotId exists
             await createChatbotIdIfNotExist(message.chatbotId);
             // check if exists userid / transport and create or update
@@ -1900,8 +1899,6 @@ module.exports = ({
             });
             let userId;
             // if no chatId, the create the user and the related chatId-transport using the userId of the message
-            console.log('Existing chat id');
-            console.log(existingChatId);
             if (existingChatId == null) {
               try {
                 await User.create(user);

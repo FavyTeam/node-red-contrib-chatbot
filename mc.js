@@ -348,7 +348,9 @@ Some **formatting** is _allowed_!`
             plugins: plugins.map(plugin => plugin.toJSON())
           },
           user: req.user,
-          settings: { ...mcSettings, environment: mcSettings.environment }
+          settings: {
+            ...mcSettings,
+            environment: mcSettings.environment }
         };
 
         const assets = mcSettings.environment === 'development' || mcSettings.environment === 'plugin' ?

@@ -1,5 +1,5 @@
-import React, { useState, useRef, useContext } from 'react';
-import { Table, Icon, ButtonGroup, Button } from 'rsuite';
+import React, { useState, useRef } from 'react';
+import { Table, Icon, ButtonGroup, Button, ButtonToolbar } from 'rsuite';
 import gql from 'graphql-tag';
 
 const { Column, HeaderCell, Cell } = Table;
@@ -13,6 +13,7 @@ import { Input } from '../../../src/components/table-filters';
 import ContextModal from '../../../src/components/context-modal';
 import useCurrentUser from '../../../src/hooks/current-user';
 import useMCContext from '../../../src/hooks/mc-context';
+import ExportButton from '../../../src/components/export-button';
 
 import '../styles/users.scss';
 import useUsers from '../hooks/users';
@@ -57,8 +58,7 @@ const Users = () => {
   const { mergeModal, mergeUser } = useMergeUser({
     onComplete: () => table.current.refetch()
   });
-
-  console.log('users chatbotit', state.chatbotId)
+  const disabled = saving;
 
   return (
     <PageContainer className="page-users">
@@ -67,7 +67,7 @@ const Users = () => {
         <ModalUser
           user={user}
           error={error}
-          disabled={saving}
+          disabled={disabled}
           onCancel={() => setUser(null)}
           onSubmit={async user => {
             await editUser({ variables: { id: user.id, user }})
@@ -95,9 +95,13 @@ const Users = () => {
         initialSortDirection="desc"
         variables={{ chatbotId: state.chatbotId }}
         toolbar={(
-          <div>
+          <ButtonToolbar>
+            <ExportButton
+              table="users"
+              disabled={disabled}
+            />
             <Button appearance="primary" onClick={() => table.current.refetch()}>Refresh</Button>
-          </div>
+          </ButtonToolbar>
         )}
         filtersSchema={[
           {
