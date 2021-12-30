@@ -1892,8 +1892,8 @@ module.exports = ({
             await createChatbotIdIfNotExist(message.chatbotId);
             // check if exists userid / transport and create or update
             const existingChatId = await ChatId.findOne({
-              where: compact({
-                chatId: message.chatId,
+              where: compactObject({
+                chatId: String(message.chatId),
                 transport: message.transport,
                 chatbotId: message.chatbotId
               })
@@ -1917,7 +1917,7 @@ module.exports = ({
               if (message.chatId != null) {
                 await ChatId.create({
                   userId: user.userId,
-                  chatId: message.chatId,
+                  chatId: String(message.chatId),
                   chatbotId: message.chatbotId,
                   transport: message.transport
                 });
