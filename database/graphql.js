@@ -1900,7 +1900,8 @@ module.exports = ({
             });
             let userId;
             // if no chatId, the create the user and the related chatId-transport using the userId of the message
-            console.log(`Existing chat id: ${existingChatId}`)
+            console.log('Existing chat id');
+            console.log(existingChatId);
             if (existingChatId == null) {
               try {
                 await User.create(user);
