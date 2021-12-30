@@ -96,6 +96,19 @@
             $('.form-warning .bot-name').html('"' + node.botname + '"');
           }
         });
+      // if enable mission control, set a random chatbot id if empty
+      $('#node-config-input-enableMissionControl')
+        .change(function() {
+          if ($(this).is(':checked')) {
+            const chatbotId = $('#node-config-input-chatbotId').val();
+            if (chatbotId == null || chatbotId === '') {
+              $.ajax({ url: '/mc/chatbotIdGenerator' })
+                .then(res => {
+                  $('#node-config-input-chatbotId').val(res);
+                });
+            }
+          }
+        });
     },
     paletteName: 'Telegram Bot',
     credentials: {
