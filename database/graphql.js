@@ -1887,6 +1887,7 @@ module.exports = ({
           },
           resolve: async function(root, { message }) {
             const { user, ...newMessage } = message;
+            console.log(`creating message: ${message.chatId} ${message.chatbotId}`)
             // check if chatbotId exists
             await createChatbotIdIfNotExist(message.chatbotId);
             // check if exists userid / transport and create or update
@@ -1899,6 +1900,7 @@ module.exports = ({
             });
             let userId;
             // if no chatId, the create the user and the related chatId-transport using the userId of the message
+            console.log(`Existing chat id: ${existingChatId}`)
             if (existingChatId == null) {
               try {
                 await User.create(user);
@@ -1924,6 +1926,25 @@ module.exports = ({
               }
             } else {
               userId = existingChatId.userId;
+              // check if user exists, create if missing
+              const existingUser = await User.findOne({
+                where: compact({
+                  userId: existingChatId.userId,
+                  chatbotId: message.chatbotId
+                })
+              });
+              if (existingUser == null) {
+                try {
+                  await User.create(user);
+                } catch(e) {
+                  // this could fail, the user already exists (was only deleted the chatId)
+                  // keep the existing one, the admin may have enriched the payload
+                  // then get the current user
+                  // currentUser = await User.findOne({ where: { userId: user.userId }});
+                  // eslint-disable-next-line no-console
+                  console.log(`Error creating user ${JSON.stringify(user)}, perhaps user already exists`);
+                }
+              }
             }
             // finally store the message
             const createdMessage = await Message.create({ ...newMessage, userId });
@@ -1931,8 +1952,6 @@ module.exports = ({
           }
         }
       }
-
-
     }),
 
     query: new GraphQLObjectType({
