@@ -1925,6 +1925,7 @@ module.exports = ({
                 // currentUser = await User.findOne({ where: { userId: user.userId }});
                 // eslint-disable-next-line no-console
                 console.log(`Error creating user ${JSON.stringify(user)}, perhaps user already exists`);
+                console.log(e);
               }
               userId = user.userId;
               if (message.chatId != null) {
@@ -1942,7 +1943,7 @@ module.exports = ({
               userId = existingChatId.userId;
               // check if user exists, create if missing
               const existingUser = await User.findOne({
-                where: compact({
+                where: compactObject({
                   userId: existingChatId.userId,
                   chatbotId: message.chatbotId
                 })
@@ -1957,6 +1958,7 @@ module.exports = ({
                   // currentUser = await User.findOne({ where: { userId: user.userId }});
                   // eslint-disable-next-line no-console
                   console.log(`Error creating user ${JSON.stringify(user)}, perhaps user already exists`);
+                  console.log(e);
                 }
               }
             }
