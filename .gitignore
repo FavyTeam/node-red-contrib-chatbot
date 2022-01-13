@@ -7,3 +7,4 @@ node_modules
 .vscode/settings.json
 model.nlp
 /plugins
+plugins.js

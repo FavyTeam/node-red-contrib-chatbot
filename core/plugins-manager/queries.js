@@ -1,8 +1,22 @@
 import gql from 'graphql-tag';
 
 const INSTALL_PLUGIN = gql`
-mutation ($plugin: String!, $url: String!, $version: String!, $initialConfiguration: String, $initialContent: InputContent) {
-  installPlugin(plugin: $plugin, url: $url, version: $version, initialConfiguration: $initialConfiguration, initialContent: $initialContent) {
+mutation (
+  $plugin: String!,
+  $url: String!,
+  $version: String!,
+  $initialConfiguration: String,
+  $initialContent: InputContent,
+  $chatbotId: String
+  ) {
+  installPlugin(
+    plugin: $plugin,
+    url: $url,
+    version: $version,
+    initialConfiguration: $initialConfiguration,
+    initialContent: $initialContent,
+    chatbotId: $chatbotId
+  ) {
     id,
     plugin,
     filename,
@@ -11,8 +25,20 @@ mutation ($plugin: String!, $url: String!, $version: String!, $initialConfigurat
 }`;
 
 const UPDATE_PLUGIN = gql`
-mutation ($plugin: String!, $url: String!, $version: String!, $initialConfiguration: String) {
-  updatePlugin(plugin: $plugin, url: $url, version: $version, initialConfiguration: $initialConfiguration) {
+mutation (
+  $plugin: String!,
+  $url: String!,
+  $version: String!,
+  $initialConfiguration: String,
+  $chatbotId: String
+  ) {
+  updatePlugin(
+    plugin: $plugin,
+    url: $url,
+    version: $version,
+    initialConfiguration: $initialConfiguration,
+    chatbotId: $chatbotId
+  ) {
     id,
     plugin,
     filename,
@@ -21,15 +47,15 @@ mutation ($plugin: String!, $url: String!, $version: String!, $initialConfigurat
 }`;
 
 const UNISTALL_PLUGIN = gql`
-mutation($plugin: String!) {
-  uninstallPlugin(plugin: $plugin) {
+mutation($plugin: String!, $chatbotId: String) {
+  uninstallPlugin(plugin: $plugin, chatbotId: $chatbotId) {
     id
   }
 }`;
 
 const CHATBOT = gql`
-query {
-  chatbot {
+query($chatbotId: String) {
+  chatbot(chatbotId: $chatbotId) {
     id,
     name,
     description,

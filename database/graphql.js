@@ -1765,9 +1765,17 @@ module.exports = ({
             url: { type: GraphQLString },
             version: { type: GraphQLString },
             initialConfiguration: { type: GraphQLString },
-            initialContent: { type: InputContentType }
+            initialContent: { type: InputContentType },
+            chatbotId: { type: GraphQLString }
           },
-          resolve: async function(root, { plugin, url, version, initialConfiguration, initialContent }) {
+          resolve: async function(root, {
+            plugin,
+            url,
+            version,
+            initialConfiguration,
+            initialContent,
+            chatbotId
+          }) {
 
             const response = await fetch(url);
             if (!response.ok) {
@@ -1779,17 +1787,22 @@ module.exports = ({
             const pluginFile = fs.createWriteStream(`${mcSettings.pluginsPath}/${filename}`);
             response.body.pipe(pluginFile);
 
-            const chatbot = await ChatBot.findOne();
-            // destroy and re-create
-            await Plugin.destroy({ where: { plugin }});
+            const chatbot = await ChatBot.findOne({
+              where: compactObject({ chatbotId })
+            });
+            // destroy and re-create (only one plugin per chatbot.id)
+            await Plugin.destroy({ where: { plugin, chatbotId: chatbot.id }});
             const installedPlugin = await Plugin.create({ plugin, url, version, chatbotId: chatbot.id, filename });
             // create default configuration, if any, if not already exist
             if (!_.isEmpty(initialConfiguration)) {
-              const existsConfiguration = await Configuration.findOne({ where: { namespace: plugin }});
+              const existsConfiguration = await Configuration.findOne({
+                where: compactObject({ namespace: plugin, chatbotId })
+              });
               if (existsConfiguration == null) {
                 await Configuration.create({
                   namespace: plugin,
-                  payload: initialConfiguration
+                  payload: initialConfiguration,
+                  chatbotId
                 });
               }
             }
@@ -1797,12 +1810,13 @@ module.exports = ({
             if (initialContent != null && !_.isEmpty(initialContent.title)) {
               let slugExists = false;
               if (!_.isEmpty(initialContent.slug)) {
-                slugExists = await Content.findOne({ where: { slug: initialContent.slug }}) != null;
+                slugExists = await Content.findOne({ where: compactObject({ slug: initialContent.slug, chatbotId })}) != null;
               }
               if (!slugExists) {
                 await Content.create({
                   namespace: 'content',
                   language: 'en',
+                  chatbotId,
                   ...initialContent
                 });
               }
@@ -1817,7 +1831,8 @@ module.exports = ({
             plugin: { type: GraphQLString },
             url: { type: GraphQLString },
             version: { type: GraphQLString },
-            initialConfiguration: { type: GraphQLString }
+            initialConfiguration: { type: GraphQLString },
+            chatbotId: { type: GraphQLString }
           },
           resolve: async function(root, { plugin, url, version, initialConfiguration }) {
             // get the current plugin
@@ -1854,7 +1869,8 @@ module.exports = ({
         uninstallPlugin: {
           type: pluginType,
           args: {
-            plugin: { type: GraphQLString }
+            plugin: { type: GraphQLString },
+            chatbotId: { type: GraphQLString }
           },
           resolve: async function(root, { plugin }) {
             const deletedPlugin = await Plugin.findOne({ where: { plugin }});

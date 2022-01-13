@@ -10,6 +10,7 @@ import Confirm from '../../../src/components/confirm';
 import ShowError from '../../../src/components/show-error';
 import useSettings from '../../../src/hooks/settings';
 import { TableFilters } from '../../../src/components';
+import useMCContext from '../../../src/hooks/mc-context';
 
 import { INSTALL_PLUGIN, CHATBOT, UNISTALL_PLUGIN, UPDATE_PLUGIN } from '../queries';
 import PluginPanel from './plugin-panel';
@@ -78,6 +79,7 @@ const CheckTree = ({ value = [], onChange, data }) => {
 
 const PluginsManager = ({ dispatch }) => {
   const { environment } = useSettings();
+  const { state } = useMCContext();
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({});
   const client = useApolloClient();
@@ -86,7 +88,11 @@ const PluginsManager = ({ dispatch }) => {
   const { install, uninstall, update, saving, error: pluginError } = usePlugins({
     onCompleted: async () => {
       try {
-        const response = await client.query({ query: CHATBOT, fetchPolicy: 'network-only' });
+        const response = await client.query({
+          query: CHATBOT,
+          variables: { chatbotId: state.chatbotId },
+          fetchPolicy: 'network-only'
+        });
         dispatch({ type: 'updateChatbot', chatbot: response.data.chatbot });
       } catch(e) {
         setError(e);
@@ -161,7 +167,8 @@ const PluginsManager = ({ dispatch }) => {
                               url: plugin.url,
                               version: plugin.version,
                               initialConfiguration: plugin.initialConfiguration,
-                              initialContent: plugin.content
+                              initialContent: plugin.content,
+                              chatbotId: state.chatbotId
                             }});
                             Notification.success({
                               placement: 'topStart',
@@ -181,7 +188,8 @@ const PluginsManager = ({ dispatch }) => {
                               plugin: plugin.id,
                               url: plugin.url,
                               version: plugin.version,
-                              initialConfiguration: plugin.initialConfiguration
+                              initialConfiguration: plugin.initialConfiguration,
+                              chatbotId: state.chatbotId
                             }});
                             Notification.success({
                               placement: 'topStart',
@@ -197,7 +205,7 @@ const PluginsManager = ({ dispatch }) => {
                           { okLabel: 'Ok, uninstall'}
                         )) {
                           try {
-                            await uninstall({ variables: { plugin: plugin.id }});
+                            await uninstall({ variables: { plugin: plugin.id, chatbotId: state.chatbotId }});
                             Notification.success({ placement: 'topStart', title: 'Unistalled', description: `Plugin "${plugin.name}" uninstalled succesfully` });
                           } catch(e) {
                             Notification.error({ placement: 'topStart', title: 'Error', description: `Something went wrong trying to uninstall the plugin "${plugin.name}"` });
