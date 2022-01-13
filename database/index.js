@@ -142,7 +142,6 @@ module.exports = mcSettings => {
   const User = sequelize.define('user', {
     userId: {
       type: Sequelize.STRING,
-      unique: true,
       allowNull: false
     },
     email: Sequelize.STRING,
