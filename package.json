@@ -12,6 +12,8 @@
     "pull-wiki": "git clone https://github.com/guidone/node-red-contrib-chatbot.wiki.git ./wiki",
     "commit-wiki": "git add . && git commit -m \"docs\"",
     "build-docs": "git clone https://github.com/guidone/node-red-contrib-chatbot.wiki.git ./wiki && node ./bin/generate-docs && rm -rf ./wiki",
+    "docker-build": "docker build . -t guidone/redbot",
+    "docker-publish": "docker push guidone/redbot",
     "clean": "rm -rf ./wiki",
     "version": "git clone https://github.com/guidone/node-red-contrib-chatbot.wiki.git ./wiki && node ./bin/generate-docs && rm -rf ./wiki && git add *.html && git add *.md",
     "start-mc": "run-s pre-start dev-server",

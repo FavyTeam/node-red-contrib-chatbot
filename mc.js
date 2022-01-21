@@ -63,10 +63,11 @@ function sendMessage(topic, payload) {
 // https://www.apollographql.com/docs/react/data/queries/
 
 
+
 async function bootstrap(server, app, log, redSettings) {
   const mcSettings = redSettings.RedBot || {};
 
-  if (mcSettings.enableMissionControl !== true) {
+  if (mcSettings.enableMissionControl !== true && process.env.REDBOT_ENABLE_MISSION_CONTROL !== 'true') {
     console.log(lcd.timestamp() + 'Red Bot Mission Control is not enabled.');
     console.log(lcd.timestamp() + '  ' + lcd.grey('Enable it by adding in Node-RED settings.js:'));
     console.log(lcd.timestamp() + '  ' + lcd.grey('  // ...'));
@@ -95,10 +96,12 @@ async function bootstrap(server, app, log, redSettings) {
   } else {
     mcSettings.environment = 'production';
   }
-  console.log(lcd.timestamp() + '  ' + lcd.green('environment: ') + lcd.grey(mcSettings.environment));
+  console.log(lcd.timestamp() + '  ' + lcd.green('front end environment: ') + lcd.grey(mcSettings.environment));
   // get the database path
-  if (mcSettings.dbPath == null) {
-    mcSettings.dbPath = path.join(__dirname, 'mission-control.sqlite');
+  if (!_.isEmpty(process.env.REDBOT_DB_PATH)) {
+    mcSettings.dbPath = path.join(process.env.REDBOT_DB_PATH, 'mission-control.sqlite');
+  } else if (mcSettings.dbPath == null) {
+    mcSettings.dbPath = path.join(redSettings.userDir, 'mission-control.sqlite');
   } else {
     mcSettings.dbPath = mcSettings.dbPath.replace(/\/$/, '') + '/mission-control.sqlite';
   }
@@ -111,7 +114,15 @@ async function bootstrap(server, app, log, redSettings) {
   }
   // get plugin path
   if (mcSettings.pluginsPath == null && !fs.existsSync(mcSettings.pluginsPath)) {
-    mcSettings.pluginsPath = path.join(__dirname, 'dist-plugins');
+    mcSettings.pluginsPath = path.join(redSettings.userDir, 'dist-plugins');
+  }
+  if (!fs.existsSync(mcSettings.pluginsPath)) {
+    // try to create it
+    try {
+      fs.mkdirSync(mcSettings.pluginsPath);
+    } catch(e) {
+      console.log(lcd.timestamp() + '  ' + lcd.orange(`Unable to create plugins dir: ${mcSettings.pluginsPath}`));
+    }
   }
   console.log(lcd.timestamp() + '  ' + lcd.green('pluginsPath: ') + lcd.grey(mcSettings.pluginsPath));
   if (mcSettings.pluginsPath == path.join(__dirname, 'dist-plugins')) {

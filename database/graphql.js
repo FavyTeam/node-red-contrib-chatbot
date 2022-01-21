@@ -51,7 +51,6 @@ const {
   GraphQLInputObjectType,
   GraphQLScalarType
 } = require('graphql');
-const { compact } = require('lodash');
 
 const DateType = new GraphQLScalarType({
   name: 'Date',
@@ -1925,6 +1924,7 @@ module.exports = ({
                 // currentUser = await User.findOne({ where: { userId: user.userId }});
                 // eslint-disable-next-line no-console
                 console.log(`Error creating user ${JSON.stringify(user)}, perhaps user already exists`);
+                // eslint-disable-next-line no-console
                 console.log(e);
               }
               userId = user.userId;
@@ -1958,6 +1958,7 @@ module.exports = ({
                   // currentUser = await User.findOne({ where: { userId: user.userId }});
                   // eslint-disable-next-line no-console
                   console.log(`Error creating user ${JSON.stringify(user)}, perhaps user already exists`);
+                  // eslint-disable-next-line no-console
                   console.log(e);
                 }
               }
